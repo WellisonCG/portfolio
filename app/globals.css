@@ -1,26 +1,126 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+  Design tokens extracted from Figma MCP.
+  These map directly to the color palette, typography, and spacing
+  used across the portfolio. Update these values if the Figma design changes.
+*/
+@theme {
+  /* Color palette */
+  --color-surface: #0d0e0d;
+  --color-primary: #f9fafd;
+  --color-muted: #b6b6c2;
+  --color-accent: #ea1646;
+
+  /* Fonts — CSS variables injected by next/font in layout.tsx */
+  --font-sans: var(--font-gabarito);
+  --font-comic: var(--font-comic-neue);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+  background-color: #0d0e0d;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: var(--font-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+
+/* Scroll indicator — arrow bobs up 5px from bottom and returns */
+@keyframes scroll-dot {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
+}
+
+.animate-scroll-dot {
+  animation: scroll-dot 1.4s ease-in-out infinite;
+}
+
+/*
+  Brush-circle draw animation
+  ─────────────────────────────────────────────────────────────────────────────
+  stroke-dashoffset: técnica nativa SVG — o stroke é desenhado progressivamente
+  do início ao fim do path. pathLength="1" normaliza o comprimento para 0–1.
+
+  0%–5%:   invisível (dashoffset: 1, opacity: 0) → fade-in rápido
+  5%–70%:  desenha (dashoffset: 1 → 0)
+  70%–85%: pausa com oval completo
+  85%–100%: fade-out — ao reiniciar o loop não há salto visível
+*/
+@keyframes draw-oval {
+  /* stroke e fill animam juntos — sem delay entre eles, sem flicker */
+  0%  { stroke-dashoffset: 1; fill-opacity: 0; animation-timing-function: ease-in-out; }
+  /* desenho completo — pausa 3s */
+  30% { stroke-dashoffset: 0; fill-opacity: 1; animation-timing-function: linear; }
+  /* fim da pausa — reverte o traço */
+  70% { stroke-dashoffset: 0; fill-opacity: 1; animation-timing-function: ease-in-out; }
+  /* traço sumiu — 0% e 100% têm os mesmos valores, loop reinicia sem salto */
+  100% { stroke-dashoffset: 1; fill-opacity: 0; }
+}
+
+.animate-draw-oval {
+  stroke-dasharray: 1;
+  animation: draw-oval 7.5s infinite;
+}
+
+/* Tooltip pulse — glow vermelho suave em loop */
+@keyframes tooltip-pulse {
+  0%, 100% { box-shadow: 0 0 6px 1px rgba(234, 22, 70, 0.4); }
+  50%       { box-shadow: 0 0 14px 4px rgba(234, 22, 70, 0.75); }
+}
+
+.animate-tooltip-pulse {
+  animation: tooltip-pulse 1.6s ease-in-out infinite;
+}
+
+
+/*
+  Particle rise — blue ember particles floating upward like flames.
+  --drift: horizontal offset at the end of the animation (set per-particle inline).
+  Opacity curve: fade in fast (0→12%), linger (12→88%), fade out (88→100%).
+*/
+@keyframes particle-rise {
+  0%   { opacity: 0;    transform: translateY(0)       translateX(0); }
+  5%   { opacity: 0.85; }
+  92%  { opacity: 0.85; }
+  100% { opacity: 0;    transform: translateY(-800px)  translateX(var(--drift, 0px)); }
+}
+
+
+/* Marquee animation for the banner section */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+  will-change: transform;
+}
+
+/* Equalizer bars — barras do mini player pulsam quando playing=true */
+@keyframes eq-bar {
+  0%, 100% { height: 3px;  }
+  50%       { height: 12px; }
+}
+
+/*
+  Car-radio text scroll — MiniPlayer track label
+  Conteúdo duplicado (50% = cópia 1, 50% = cópia 2) para loop sem emenda.
+  Pausa de 12% no início e 12% no fim para o usuário ter tempo de ler.
+*/
+@keyframes text-marquee {
+  0%,  12%  { transform: translateX(0); }
+  88%, 100% { transform: translateX(-50%); }
+}
+
