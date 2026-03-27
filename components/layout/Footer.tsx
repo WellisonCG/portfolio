@@ -36,7 +36,7 @@ export default function Footer() {
   return (
     <footer className="flex w-full flex-col items-center gap-[64px] md:gap-[104px] pb-[32px] md:pb-[48px]">
       {/* Social row */}
-      <div className="flex w-full max-w-[1200px] flex-col md:flex-row items-center justify-center gap-[24px] md:gap-[56px] px-4 md:px-0 text-center md:text-left">
+      <div className="flex w-full max-w-[1200px] flex-col md:flex-row items-center justify-center gap-[24px] md:gap-[56px] px-10 xl:px-0 text-center md:text-left">
         <p className="font-sans text-[16px] md:text-[18px] lg:text-[20px] font-normal leading-[1.5] text-muted">
           Follow me on social medias<br />to see more of my work
         </p>
