@@ -45,20 +45,20 @@ export default function AboutSection() {
   return (
     <section
       id="about"
-      className="flex w-full max-w-[1200px] flex-col-reverse md:flex-row items-center gap-[32px] md:gap-[60px] lg:gap-[94px] px-4 md:px-[40px] lg:px-[79px]"
+      className="flex w-full max-w-[1200px] flex-col lg:flex-row items-center gap-[32px] lg:gap-[94px] px-10 lg:px-[79px]"
     >
 
       {/* ── Coluna esquerda — texto ─────────────────────────────────────────── */}
       <div id="about-text" className="flex shrink-0 flex-col gap-[24px] w-full md:w-auto">
 
         <div className="flex flex-col gap-[16px]">
-          <h2 className="font-sans font-bold text-[28px] md:text-[38px] lg:text-[48px] leading-[1.3] text-primary w-full md:w-[360px] lg:w-[420px]">
+          <h2 className="font-sans font-bold text-[28px] md:text-[38px] lg:text-[48px] leading-[1.3] text-primary w-full lg:w-[420px]">
             The hand that
             <br />
             holds the pencil
           </h2>
 
-          <p className="font-sans text-[14px] md:text-[17px] lg:text-[20px] font-normal leading-[1.5] text-muted w-full md:w-[440px] lg:w-[509px]">
+          <p className="font-sans text-[14px] md:text-[17px] lg:text-[20px] font-normal leading-[1.5] text-muted w-full lg:w-[509px]">
             My pleasure. I&apos;m Wellison and I have always been moved by the
             desire to make real ideas that only existed in my mind. I found
             myself in design, and currently I dedicate myself to the creation
@@ -86,7 +86,7 @@ export default function AboutSection() {
       <div
         ref={photoRef}
         id="about-photo"
-        className="group relative h-[240px] w-full md:h-[360px] md:w-[300px] lg:h-[468px] lg:w-[408px] shrink-0"
+        className="group relative h-[240px] w-full md:h-[360px] lg:h-[468px] lg:w-[408px] shrink-0"
         style={{ willChange: "transform" }}
       >
         <div className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.06]">
