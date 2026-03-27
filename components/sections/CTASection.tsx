@@ -45,14 +45,26 @@ export default function CTASection() {
   return (
     <section
       id="contact"
-      className="w-full max-w-[1200px] px-4 lg:px-0 lg:pl-[92px]"
+      className="w-full max-w-[1200px] px-10 lg:px-0 lg:pl-[92px]"
     >
       <div
         id="cta-section"
         className="relative flex flex-col items-center gap-[24px] overflow-visible rounded-[24px] border border-[#37373b] bg-[#191919] p-[20px] md:p-[32px] lg:p-[40px]"
       >
 
-        {/* ── Avatar — desktop: extravasa à esquerda; mobile: oculto (sem espaço) */}
+        {/* ── Avatar md — bottom-left do card; pés extravasam 30px abaixo */}
+        <div
+          className="hidden md:block lg:hidden absolute cursor-pointer"
+          style={{ bottom: "-30px", left: "0" }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <div className="-rotate-[9.31deg] shadow-[2px_2px_6px_0px_rgba(0,0,0,0.08)]">
+            <EyeTrackingAvatar />
+          </div>
+        </div>
+
+        {/* ── Avatar lg+ — extravasa à esquerda */}
         <div
           className="hidden lg:block absolute -translate-y-1/2 cursor-pointer"
           style={{ left: "-92px", top: "calc(50% + 0.9px)" }}
