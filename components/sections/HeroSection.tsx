@@ -394,7 +394,7 @@ export default function HeroSection() {
         <div
           ref={avatarRef}
           id="hero-avatar"
-          className={`absolute hidden sm:block left-2 top-[13px] md:left-[60px] lg:left-[112px] w-[200px] h-[155px] md:w-[250px] md:h-[195px] lg:w-[300px] lg:h-[230px] z-[2] select-none ${dragging ? "lg:cursor-grabbing" : "lg:cursor-grab"}`}
+          className={`absolute hidden sm:block left-2 sm:left-[20px] top-[13px] md:left-[60px] lg:left-[112px] w-[200px] h-[155px] md:w-[250px] md:h-[195px] lg:w-[300px] lg:h-[230px] z-[2] select-none ${dragging ? "lg:cursor-grabbing" : "lg:cursor-grab"}`}
           aria-hidden="true"
           onPointerDown={onAvatarDown}
           onPointerMove={onAvatarMove}

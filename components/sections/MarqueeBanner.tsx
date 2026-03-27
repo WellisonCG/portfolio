@@ -26,13 +26,11 @@ export default function MarqueeBanner() {
           stroke-width="10" aproxima a espessura do traço brush original.
         */}
         <svg
-          width="100%"
           viewBox="0 0 533 136"
-          preserveAspectRatio="xMidYMid meet"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 w-full h-full"
+          className="pointer-events-none absolute w-full aspect-[533/136] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
         >
           <path
             pathLength={1}

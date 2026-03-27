@@ -86,7 +86,7 @@ export default function AboutSection() {
       <div
         ref={photoRef}
         id="about-photo"
-        className="group relative h-[240px] w-full md:h-[360px] lg:h-[468px] lg:w-[408px] shrink-0"
+        className="group relative h-[240px] sm:h-[280px] w-full md:h-[360px] lg:h-[468px] lg:w-[408px] shrink-0"
         style={{ willChange: "transform" }}
       >
         <div className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.06]">
