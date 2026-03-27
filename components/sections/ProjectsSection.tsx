@@ -39,7 +39,7 @@ export default function ProjectsSection() {
   return (
     <section
       id="projects"
-      className="flex w-full max-w-[1200px] flex-col md:flex-row items-center justify-center gap-[24px] px-4 md:px-0"
+      className="flex w-full max-w-[1200px] flex-col lg:flex-row items-center justify-center gap-[24px] px-10 xl:px-0"
     >
       {PROJECTS.map((project) => (
         <ProjectCard key={project.title} {...project} />
