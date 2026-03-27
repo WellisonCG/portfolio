@@ -15,7 +15,7 @@ export default function MarqueeBanner() {
   return (
     <section
       id="marquee-banner"
-      className="flex w-full items-center justify-center px-8 pt-12"
+      className="flex w-full items-center justify-center px-10 xl:px-8 pt-12"
     >
       <div className="relative flex items-center justify-center">
 
@@ -27,12 +27,12 @@ export default function MarqueeBanner() {
         */}
         <svg
           width="100%"
-          height="136"
           viewBox="0 0 533 136"
+          preserveAspectRatio="xMidYMid meet"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-0"
+          className="pointer-events-none absolute inset-0 w-full h-full"
         >
           <path
             pathLength={1}
