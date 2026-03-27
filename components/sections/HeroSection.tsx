@@ -34,9 +34,11 @@
             - click: box shrinks → triggers resizing again
 
   Breakpoints:
-  - default (< 640px): mobile — avatar pequeno, sem decorativos
-  - md (768px+):       tablet — avatar médio, cursor reposicionado
-  - lg (1024px+):      desktop — layout Figma completo, todos os decorativos visíveis
+  - default (< 640px): avatar hidden, cursor hidden
+  - sm (640–767px):    avatar visible (sm), no speech bubble, no cursor
+  - md (768–1023px):   cursor visible (md:block), no speech bubble, drag disabled
+  - lg (1024–1279px):  speech bubble visible (lg:block), drag active, dynamic GSAP cursor
+  - xl (1280px+):      notes visible (xl:block), hardcoded GSAP offsets
 */
 
 "use client";
@@ -77,6 +79,7 @@ export default function HeroSection() {
   const [notesDragging,  setNotesDragging] = useState(false);
 
   const onAvatarDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (window.innerWidth < 1024) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     const el      = avatarRef.current;
     const section = sectionRef.current;
@@ -162,6 +165,7 @@ export default function HeroSection() {
   }, []);
 
   const onNotesDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (window.innerWidth < 1024) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     const el      = notesRef.current;
     const section = sectionRef.current;
@@ -252,26 +256,38 @@ export default function HeroSection() {
 
     idleTlRef.current?.kill();
 
+    // xl+ (≥1280px): use hardcoded offsets calibrated for the 1200px layout.
+    // lg  (1024–1279px): compute delta dynamically so the cursor lands on the
+    //   box's TL corner regardless of viewport width.
+    let tX: number, tY: number;
+    if (window.innerWidth >= 1280) {
+      tX = -509; tY = -122;
+    } else {
+      const boxRect    = box.getBoundingClientRect();
+      const cursorRect = cursor.getBoundingClientRect();
+      tX = boxRect.left   - cursorRect.right;
+      tY = boxRect.top    - cursorRect.bottom;
+    }
+
     if (disturbedRef.current) {
       disturbedRef.current = false;
 
       gsap.timeline({ onComplete: () => setPhase("idle") })
-        .to(cursor, { x: -506, y: -69, duration: 1.4, ease: "power2.inOut" })
+        .to(cursor, { x: tX + 3, y: tY + 53, duration: 1.4, ease: "power2.inOut" })
         .to(cursor, { duration: 0.2 })
-        .to(cursor, { x: -509, y: -122, duration: 0.7, ease: "power2.out" })
-        .to(box, { rotation: 0, x: 0, y: 0, duration: 0.7, ease: "power2.out" }, "<")
-        .to(cursor, { x: -511, y: -124, duration: 0.25, ease: "power2.out" })
+        .to(cursor, { x: tX,     y: tY,       duration: 0.7, ease: "power2.out" })
+        .to(box,    { rotation: 0, x: 0, y: 0, duration: 0.7, ease: "power2.out" }, "<")
+        .to(cursor, { x: tX - 2, y: tY - 2,   duration: 0.25, ease: "power2.out" })
         .to(cursor, { duration: 0.4 })
-        .to(cursor, { x: 0, y: 0, duration: 1.5, ease: "power2.inOut" });
-
+        .to(cursor, { x: 0,      y: 0,        duration: 1.5,  ease: "power2.inOut" });
     } else {
       gsap.timeline({ onComplete: () => setPhase("idle") })
-        .to(cursor, { x: -509, y: -122, duration: 2,    ease: "power2.inOut" })
+        .to(cursor, { x: tX,     y: tY,       duration: 2,    ease: "power2.inOut" })
         .to(cursor, { duration: 0.3 })
-        .to(cursor, { x: -511, y: -124, duration: 0.25, ease: "power2.out" })
-        .to(box,    { scale: 1.015,    duration: 0.5,  ease: "back.out(1.4)" }, "<")
+        .to(cursor, { x: tX - 2, y: tY - 2,   duration: 0.25, ease: "power2.out" })
+        .to(box,    { scale: 1.015,            duration: 0.5,  ease: "back.out(1.4)" }, "<")
         .to(cursor, { duration: 0.4 })
-        .to(cursor, { x: 0,   y: 0,   duration: 1.5,  ease: "power2.inOut" });
+        .to(cursor, { x: 0,      y: 0,        duration: 1.5,  ease: "power2.inOut" });
     }
   }, []);
 
@@ -348,7 +364,7 @@ export default function HeroSection() {
       </div>
 
       {/* ── Main hero area ─────────────────────────────────────────────────── */}
-      <div className="relative w-full max-w-[1200px] px-4 lg:px-[98px] py-[18px]">
+      <div className="relative w-full max-w-[1200px] px-10 xl:px-[98px] py-[18px]">
 
         {/* Toca-fitas — visível apenas em lg+ */}
         <div
@@ -374,11 +390,11 @@ export default function HeroSection() {
           </p>
         </div>
 
-        {/* Avatar — arrastável. lg: posição Figma; md: intermediário; mobile: canto */}
+        {/* Avatar — hidden below sm; drag active at lg+ only */}
         <div
           ref={avatarRef}
           id="hero-avatar"
-          className={`absolute left-2 top-[13px] md:left-[60px] lg:left-[112px] w-[200px] h-[155px] md:w-[250px] md:h-[195px] lg:w-[300px] lg:h-[230px] z-[2] select-none ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
+          className={`absolute hidden sm:block left-2 top-[13px] md:left-[60px] lg:left-[112px] w-[200px] h-[155px] md:w-[250px] md:h-[195px] lg:w-[300px] lg:h-[230px] z-[2] select-none ${dragging ? "lg:cursor-grabbing" : "lg:cursor-grab"}`}
           aria-hidden="true"
           onPointerDown={onAvatarDown}
           onPointerMove={onAvatarMove}
@@ -396,25 +412,30 @@ export default function HeroSection() {
               unoptimized
             />
           </div>
-          <div className="absolute left-[153px] top-0">
-            <div className="-rotate-[6.68deg]">
-              <p className="font-comic text-[16px] leading-[1.3] font-bold text-primary whitespace-nowrap">
-                Where&apos;s my
-                <br />
-                work playlist?
-              </p>
-            </div>
-            <div className="absolute left-[8px] top-[59px]">
-              <Image src={HERO_ARROW} alt="" width={18} height={26} unoptimized />
-            </div>
+        </div>
+
+        {/* Speech bubble + arrow — lg+ only; sibling of avatar, not drag-wired */}
+        <div
+          className="hidden lg:block absolute left-[265px] top-[13px] z-[2] pointer-events-none select-none"
+          aria-hidden="true"
+        >
+          <div className="-rotate-[6.68deg]">
+            <p className="font-comic text-[16px] leading-[1.3] font-bold text-primary whitespace-nowrap">
+              Where&apos;s my
+              <br />
+              work playlist?
+            </p>
+          </div>
+          <div className="absolute left-[8px] top-[59px]">
+            <Image src={HERO_ARROW} alt="" width={18} height={26} unoptimized />
           </div>
         </div>
 
-        {/* Notes illustration — visível apenas em lg+ */}
+        {/* Notes illustration — visível apenas em xl+ */}
         <div
           ref={notesRef}
           id="hero-sticker"
-          className={`hidden lg:block absolute left-[910px] top-[45px] z-[2] select-none ${notesDragging ? "cursor-grabbing" : "cursor-grab"}`}
+          className={`hidden xl:block absolute left-[910px] top-[45px] z-[2] select-none ${notesDragging ? "lg:cursor-grabbing" : "lg:cursor-grab"}`}
           aria-hidden="true"
           onPointerDown={onNotesDown}
           onPointerMove={onNotesMove}
@@ -424,11 +445,11 @@ export default function HeroSection() {
           <NotesIllustration />
         </div>
 
-        {/* Cursor — reposicionado por breakpoint */}
+        {/* Cursor — hidden below md; animated at lg+ */}
         <div
           ref={cursorRef}
           id="hero-cursor"
-          className="absolute right-4 top-[190px] md:right-[180px] md:top-[210px] lg:right-[224px] lg:top-[226px] pointer-events-none z-10"
+          className="hidden md:block absolute right-4 top-[190px] md:right-[180px] md:top-[210px] lg:right-[224px] lg:top-[226px] pointer-events-none z-10"
           aria-hidden="true"
         >
           <Image src={CURSOR_ICON} alt="" width={124} height={43} unoptimized />
