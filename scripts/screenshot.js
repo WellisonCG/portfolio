@@ -85,10 +85,19 @@ async function waitForServer(url, retries = 30, delay = 1000) {
       }`,
     });
 
-    await page.goto(BASE, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}?screenshot=1`, { waitUntil: "networkidle" });
 
     // Allow fonts and images to settle
     await page.waitForTimeout(800);
+
+    // Reset inline opacity:0 elements (HeroSection cassette + label)
+    // ScrollAnimations is skipped via ?screenshot=1 so all other sections
+    // are already at their natural opacity:1 CSS default.
+    await page.evaluate(() => {
+      document.querySelectorAll("[style*='opacity: 0'], [style*='opacity:0']").forEach(el => {
+        el.style.opacity = "1";
+      });
+    });
 
     const file = path.join(OUT_DIR, `${vp.label}.png`);
     await page.screenshot({ path: file, fullPage: true });

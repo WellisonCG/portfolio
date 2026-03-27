@@ -25,6 +25,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function ScrollAnimations() {
   useEffect(() => {
+    // Skip all entrance animations in screenshot mode
+    if (new URLSearchParams(window.location.search).get("screenshot") === "1") return;
+
     const ctx = gsap.context(() => {
 
       // ── Hero — load animation (sem ScrollTrigger) ─────────────────
