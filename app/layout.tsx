@@ -23,7 +23,7 @@ const comicNeue = Comic_Neue({
 });
 
 export const metadata: Metadata = {
-  title: "Wellison Gonçalves — UX/UI Designer",
+  title: "Wellison Gonçalves - Product Designer",
   description:
     "Portfolio of Wellison Gonçalves. Full-cycle designer who explores every stage, delivers real impact and loves the process.",
 };
