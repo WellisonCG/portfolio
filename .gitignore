@@ -42,3 +42,7 @@ next-env.d.ts
 
 # Claude Code local tooling
 .claude/
+
+# Internal project documentation (not relevant for public repo)
+CLAUDE.md
+CONTEXT.md
