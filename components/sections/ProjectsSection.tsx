@@ -11,39 +11,48 @@
   Cover images are local PNGs in /public/assets/projects/.
 */
 
+"use client";
+
 import ProjectCard from "@/components/ui/ProjectCard";
 import { YOUPAY_SCREENS, INTER_PHONE } from "@/lib/assets";
-
-const PROJECTS = [
-  {
-    title: "Youpay Digital",
-    description:
-      "Increasing revenue and strengthening the brand with redesign of the payment flow",
-    href: "/youpay",
-    coverBg: "#eaf1fb",
-    coverImage: YOUPAY_SCREENS,
-    coverImageAlt: "Youpay Digital — payment flow redesign screens",
-  },
-  {
-    title: "Inter My Finances",
-    description:
-      "Creating a new feature to personal financial managment for Banco Inter users",
-    href: "/inter-my-finances",
-    coverBg: "#ffffff",
-    coverImage: INTER_PHONE,
-    coverImageAlt: "Inter My Finances — personal finance feature screens",
-  },
-];
+import { useLanguage } from "@/lib/language-context";
 
 export default function ProjectsSection() {
+  const { language } = useLanguage();
+  const prefix = language === "PT" ? "/pt" : "";
+
+  const PROJECTS = [
+    {
+      title: "Youpay Digital",
+      description:
+        language === "PT"
+          ? "Aumentando a receita e fortalecendo a marca com o redesign do fluxo de pagamento"
+          : "Increasing revenue and strengthening the brand with redesign of the payment flow",
+      href: `${prefix}/youpay`,
+      coverBg: "#eaf1fb",
+      coverImage: YOUPAY_SCREENS,
+      coverImageAlt: "Youpay Digital — payment flow redesign screens",
+    },
+    {
+      title: "Inter My Finances",
+      description:
+        language === "PT"
+          ? "Criando uma nova funcionalidade de gestão financeira pessoal para usuários do Banco Inter"
+          : "Creating a new feature to personal financial management for Banco Inter users",
+      href: `${prefix}/inter-my-finances`,
+      coverBg: "#ffffff",
+      coverImage: INTER_PHONE,
+      coverImageAlt: "Inter My Finances — personal finance feature screens",
+    },
+  ];
+
   return (
-    <section
-      id="projects"
-      className="flex w-full max-w-[1200px] flex-col lg:flex-row items-center justify-center gap-[24px] px-10 xl:px-0"
-    >
-      {PROJECTS.map((project) => (
-        <ProjectCard key={project.title} {...project} />
-      ))}
+    <section id="projects" className="w-full px-10 xl:px-0">
+      <div className="w-full max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-center gap-[24px]">
+        {PROJECTS.map((project) => (
+          <ProjectCard key={project.title} {...project} />
+        ))}
+      </div>
     </section>
   );
 }

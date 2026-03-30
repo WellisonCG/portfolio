@@ -15,9 +15,11 @@
 
 interface Props {
   onClick: () => void;
+  playing?: boolean;
 }
 
-export default function CassettePlayer({ onClick }: Props) {
+export default function CassettePlayer({ onClick, playing = false }: Props) {
+  const reelState = playing ? "running" : "paused";
   return (
     <button
       onClick={onClick}
@@ -75,15 +77,7 @@ export default function CassettePlayer({ onClick }: Props) {
 
         {/* ── Carretel esquerdo — centro (30, 31) ────────────────────────── */}
         <circle cx="30" cy="31" r="11" fill="#222230" stroke="#383848" strokeWidth="0.8" />
-        <g>
-          <animateTransform
-            attributeName="transform"
-            type="rotate"
-            from="0 30 31"
-            to="360 30 31"
-            dur="6s"
-            repeatCount="indefinite"
-          />
+        <g style={{ animation: "reel-spin 6s linear infinite", animationPlayState: reelState, transformBox: "fill-box", transformOrigin: "center" }}>
           <line x1="30" y1="20.5" x2="30" y2="41.5" stroke="#4a4a60" strokeWidth="0.9" />
           <line x1="19.5" y1="31" x2="40.5" y2="31" stroke="#4a4a60" strokeWidth="0.9" />
           <line x1="22.5" y1="23.5" x2="37.5" y2="38.5" stroke="#4a4a60" strokeWidth="0.6" />
@@ -95,15 +89,7 @@ export default function CassettePlayer({ onClick }: Props) {
 
         {/* ── Carretel direito — centro (57, 31) ─────────────────────────── */}
         <circle cx="57" cy="31" r="11" fill="#222230" stroke="#383848" strokeWidth="0.8" />
-        <g>
-          <animateTransform
-            attributeName="transform"
-            type="rotate"
-            from="0 57 31"
-            to="360 57 31"
-            dur="8s"
-            repeatCount="indefinite"
-          />
+        <g style={{ animation: "reel-spin 8s linear infinite", animationPlayState: reelState, transformBox: "fill-box", transformOrigin: "center" }}>
           <line x1="57" y1="20.5" x2="57" y2="41.5" stroke="#4a4a60" strokeWidth="0.9" />
           <line x1="46.5" y1="31" x2="67.5" y2="31" stroke="#4a4a60" strokeWidth="0.9" />
           <line x1="49.5" y1="23.5" x2="64.5" y2="38.5" stroke="#4a4a60" strokeWidth="0.6" />

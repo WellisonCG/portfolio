@@ -19,7 +19,7 @@
   A atualização usa RAF + lerp direto no DOM para evitar re-renders React.
 */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import Image from "next/image";
 import { CTA_AVATAR } from "@/lib/assets";
 
@@ -43,7 +43,10 @@ function clampEllipse(dx: number, dy: number, rx: number, ry: number) {
 }
 
 export default function EyeTrackingAvatar() {
-  const containerRef  = useRef<HTMLDivElement>(null);
+  const uid          = useId();
+  const maskR        = `mask-r-${uid}`;
+  const maskL        = `mask-l-${uid}`;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Refs para os elementos SVG (atualização direta, sem state)
   const rIrisRef = useRef<SVGCircleElement>(null);
@@ -56,7 +59,8 @@ export default function EyeTrackingAvatar() {
   const lCur = useRef({ x: LEFT.cx,  y: LEFT.cy  });
   const rTgt = useRef({ x: RIGHT.cx, y: RIGHT.cy });
   const lTgt = useRef({ x: LEFT.cx,  y: LEFT.cy  });
-  const rafRef = useRef<number>(0);
+  const rafRef   = useRef<number>(0);
+  const isPaused = useRef(false);
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
@@ -76,14 +80,34 @@ export default function EyeTrackingAvatar() {
 
       const lc = clampEllipse(mx - LEFT.cx, my - LEFT.cy, MAX_RX, MAX_RY);
       lTgt.current = { x: LEFT.cx + lc.x, y: LEFT.cy + lc.y };
+
+      // Resume RAF if it was paused (eyes had settled)
+      if (isPaused.current) {
+        isPaused.current = false;
+        rafRef.current = requestAnimationFrame(tick);
+      }
     };
 
     const tick = () => {
+      const rDx = rTgt.current.x - rCur.current.x;
+      const rDy = rTgt.current.y - rCur.current.y;
+      const lDx = lTgt.current.x - lCur.current.x;
+      const lDy = lTgt.current.y - lCur.current.y;
+
+      // Eyes have settled — pause RAF until next mouse move
+      if (
+        Math.abs(rDx) < 0.01 && Math.abs(rDy) < 0.01 &&
+        Math.abs(lDx) < 0.01 && Math.abs(lDy) < 0.01
+      ) {
+        isPaused.current = true;
+        return;
+      }
+
       // Lerp
-      rCur.current.x += (rTgt.current.x - rCur.current.x) * LERP;
-      rCur.current.y += (rTgt.current.y - rCur.current.y) * LERP;
-      lCur.current.x += (lTgt.current.x - lCur.current.x) * LERP;
-      lCur.current.y += (lTgt.current.y - lCur.current.y) * LERP;
+      rCur.current.x += rDx * LERP;
+      rCur.current.y += rDy * LERP;
+      lCur.current.x += lDx * LERP;
+      lCur.current.y += lDy * LERP;
 
       // Atualiza DOM diretamente
       rIrisRef.current?.setAttribute("cx", rCur.current.x.toFixed(3));
@@ -99,10 +123,28 @@ export default function EyeTrackingAvatar() {
       rafRef.current = requestAnimationFrame(tick);
     };
 
-    window.addEventListener("mousemove", onMouseMove);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          window.addEventListener("mousemove", onMouseMove);
+          if (isPaused.current) {
+            isPaused.current = false;
+            rafRef.current = requestAnimationFrame(tick);
+          }
+        } else {
+          window.removeEventListener("mousemove", onMouseMove);
+          cancelAnimationFrame(rafRef.current);
+          isPaused.current = true;
+        }
+      },
+      { threshold: 0 },
+    );
+
+    if (containerRef.current) observer.observe(containerRef.current);
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
+      observer.disconnect();
       window.removeEventListener("mousemove", onMouseMove);
       cancelAnimationFrame(rafRef.current);
     };
@@ -135,10 +177,10 @@ export default function EyeTrackingAvatar() {
         className="pointer-events-none absolute inset-0"
       >
         <defs>
-          <mask id="ov-mask-right" maskUnits="userSpaceOnUse">
+          <mask id={maskR} maskUnits="userSpaceOnUse">
             <ellipse cx="99.4062" cy="112.104" rx="11.5" ry="17.5" fill="white" />
           </mask>
-          <mask id="ov-mask-left" maskUnits="userSpaceOnUse">
+          <mask id={maskL} maskUnits="userSpaceOnUse">
             <ellipse cx="46.4062" cy="112.104" rx="11.5" ry="17.5" fill="white" />
           </mask>
         </defs>
@@ -148,13 +190,13 @@ export default function EyeTrackingAvatar() {
         <circle cx="99.4062" cy="111.104" r="8.5" fill="white" />
 
         {/* Olho direito */}
-        <g mask="url(#ov-mask-right)">
+        <g mask={`url(#${maskR})`}>
           <circle ref={rIrisRef} cx="99.4062" cy="110.104" r="6.5" fill="#1B1B1B" />
           <circle ref={rHighRef} cx="95.9062" cy="106.604" r="3"   fill="white"   />
         </g>
 
         {/* Olho esquerdo */}
-        <g mask="url(#ov-mask-left)">
+        <g mask={`url(#${maskL})`}>
           <circle ref={lIrisRef} cx="46.4062" cy="110.104" r="6.5" fill="#1B1B1B" />
           <circle ref={lHighRef} cx="42.9062" cy="106.604" r="3"   fill="white"   />
         </g>

@@ -10,7 +10,7 @@ import InterFinancesContent from "./InterFinancesContent";
 
 export default function InterFinancesBody() {
   return (
-    <div className="flex w-full max-w-[1200px] items-start justify-between px-[80px] pb-[100px] pt-[80px]">
+    <div className="flex w-full max-w-[1200px] items-start justify-center px-[40px] lg:justify-between lg:px-[80px] lg:pb-[100px]">
       <InterFinancesSidebar />
       <InterFinancesContent />
     </div>

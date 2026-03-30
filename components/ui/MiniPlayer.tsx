@@ -1,31 +1,76 @@
 /*
-  MiniPlayer
+  MiniPlayer — YouTube IFrame API
   ─────────────────────────────────────────────────────────────────────────────
   Layout compacto:
 
   ┌────────────────────────────────────────┐
   │ [Título · Artista →scroll←]  0:52  [X] │
-  │ ──────────────────────────────────────  │  progress bar simples
+  │ ──────────────────────────────────────  │  progress bar real
   │   ⏮         ⏸/▶         ⏭       🔊  │
   └────────────────────────────────────────┘
 
-  - Texto desliza (marquee estilo car-radio) se não couber na linha
-  - Barra de progresso simples, sem dot
-  - Animações de abertura/fechamento via GSAP, do/para o botão de play
+  Áudio via YouTube IFrame Player API (iframe oculto).
+  Animações de abertura/fechamento via GSAP, do/para o botão de play.
 */
 
 "use client";
 
 import { useEffect, useRef, useCallback, useState } from "react";
+import { createPortal } from "react-dom";
 import gsap from "gsap";
+
+// ─── YouTube IFrame API types (minimal) ───────────────────────────────────
+
+interface YTPlayer {
+  playVideo(): void;
+  pauseVideo(): void;
+  loadVideoById(id: string): void;
+  cueVideoById(id: string): void;
+  getCurrentTime(): number;
+  getDuration(): number;
+  setVolume(v: number): void;
+  mute(): void;
+  unMute(): void;
+  destroy(): void;
+}
+
+declare global {
+  interface Window {
+    YT: {
+      Player: new (
+        el: HTMLElement,
+        opts: {
+          videoId: string;
+          playerVars?: Record<string, number | string>;
+          events?: {
+            onReady?: (e: { target: YTPlayer }) => void;
+            onStateChange?: (e: { data: number }) => void;
+          };
+        },
+      ) => YTPlayer;
+      PlayerState: { PLAYING: 1; PAUSED: 2; ENDED: 0; BUFFERING: 3 };
+    };
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
 
 // ─── Tracks ───────────────────────────────────────────────────────────────
 
 const TRACKS = [
-  { title: "Relax My Eyes", artist: "Novo Amor", duration: "3:24", elapsed: "0:52", progress: 0.26 },
-  { title: "Chega",         artist: "Rubel",     duration: "2:58", elapsed: "1:10", progress: 0.39 },
-  { title: "Lua",           artist: "Djavan",    duration: "4:12", elapsed: "0:38", progress: 0.15 },
+  { title: "VIRUS",               artist: "KLOUD",       videoId: "bDVEdZaFHA8" },
+  { title: "Savior Complex",      artist: "Tiny Habits", videoId: "nlA2O3LL0O8" },
+  { title: "Take Me Back To Eden",artist: "Sleep Token", videoId: "k8h50PjQozw" },
+  { title: "Perspective",         artist: "Cafuné",      videoId: "n87C0iUyrCU" },
 ];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+
+function formatTime(s: number): string {
+  if (!isFinite(s) || s < 0) return "0:00";
+  const m  = Math.floor(s / 60);
+  const ss = String(Math.floor(s % 60)).padStart(2, "0");
+  return `${m}:${ss}`;
+}
 
 // ─── Icons ────────────────────────────────────────────────────────────────
 
@@ -77,11 +122,6 @@ function IconVolume({ muted }: { muted: boolean }) {
 }
 
 // ─── Scrolling track label ─────────────────────────────────────────────────
-/*
-  Detecta se o texto transborda o container.
-  Se sim: exibe duas cópias em flex com animação text-marquee (loop sem emenda).
-  Se não: exibe estático.
-*/
 
 function TrackLabel({ title, artist }: { title: string; artist: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -89,18 +129,16 @@ function TrackLabel({ title, artist }: { title: string; artist: string }) {
   const [scroll, setScroll] = useState(false);
 
   useEffect(() => {
-    const measure    = measureRef.current;
-    const container  = containerRef.current;
+    const measure   = measureRef.current;
+    const container = containerRef.current;
     if (!measure || !container) return;
-
     const id = requestAnimationFrame(() => {
       setScroll(measure.scrollWidth > container.clientWidth);
     });
     return () => cancelAnimationFrame(id);
   }, [title, artist]);
 
-  // Velocidade: ~40px/s — textos longos levam mais tempo
-  const label = `${title} · ${artist}`;
+  const label    = `${title} · ${artist}`;
   const duration = Math.max(5, label.length * 0.28);
 
   const content = (
@@ -113,7 +151,6 @@ function TrackLabel({ title, artist }: { title: string; artist: string }) {
 
   return (
     <div ref={containerRef} className="relative min-w-0 flex-1 overflow-hidden">
-      {/* Elemento invisível para medir a largura real do texto */}
       <span
         ref={measureRef}
         className="pointer-events-none invisible absolute whitespace-nowrap font-sans text-[12px]"
@@ -121,13 +158,7 @@ function TrackLabel({ title, artist }: { title: string; artist: string }) {
       >
         {label}
       </span>
-
       {scroll ? (
-        /*
-          Duas cópias lado a lado — ao animar -50%, a segunda cópia
-          assume a posição inicial da primeira: loop sem emenda.
-          pr-[48px] cria separação visual entre as cópias.
-        */
         <div
           className="flex whitespace-nowrap font-sans text-[12px]"
           style={{ animation: `text-marquee ${duration}s linear infinite` }}
@@ -175,17 +206,151 @@ interface MiniPlayerProps {
   getOriginRect: () => DOMRect | null;
   onClose: () => void;
   onRegisterClose?: (fn: () => void) => void;
+  onPlayingChange?: (playing: boolean) => void;
 }
 
-export default function MiniPlayer({ getOriginRect, onClose, onRegisterClose }: MiniPlayerProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
+export default function MiniPlayer({ getOriginRect, onClose, onRegisterClose, onPlayingChange }: MiniPlayerProps) {
+  const cardRef    = useRef<HTMLDivElement>(null);
+  const iframeRef  = useRef<HTMLDivElement>(null);
+  const playerRef  = useRef<YTPlayer | null>(null);
+  const readyRef   = useRef(false);
+  const tickRef    = useRef<ReturnType<typeof setInterval> | null>(null);
+  const playingRef = useRef(false);
+  const idxRef     = useRef(0);
 
-  const [playing, setPlaying] = useState(false);
-  const [idx, setIdx]         = useState(0);
-  const [volume, setVolume]   = useState(0.3);
-  const [muted, setMuted]     = useState(false);
+  const [playing,  setPlaying]  = useState(false);
+  const [idx,      setIdx]      = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [elapsed,  setElapsed]  = useState("0:00");
+  const [volume,   setVolume]   = useState(0.3);
+  const [muted,    setMuted]    = useState(false);
 
   const track = TRACKS[idx];
+
+  // ── YouTube IFrame API ────────────────────────────────────────────────
+  useEffect(() => {
+    const initPlayer = () => {
+      if (!iframeRef.current) return;
+
+      new window.YT.Player(iframeRef.current, {
+        videoId: TRACKS[0].videoId,
+        playerVars: {
+          autoplay:       0,
+          controls:       0,
+          disablekb:      1,
+          fs:             0,
+          iv_load_policy: 3,
+          modestbranding: 1,
+          rel:            0,
+          playsinline:    1,
+        },
+        events: {
+          onReady: (e) => {
+            // e.target é o player totalmente inicializado com todos os métodos
+            playerRef.current = e.target as unknown as YTPlayer;
+            playerRef.current.setVolume(30);
+            readyRef.current = true;
+          },
+          onStateChange: (e) => {
+            // 1 = PLAYING, 2 = PAUSED, 0 = ENDED
+            if (e.data === 1) {
+              playingRef.current = true;
+              setPlaying(true);
+            } else if (e.data === 2 || e.data === 0) {
+              playingRef.current = false;
+              setPlaying(false);
+            }
+            // Auto-advance on end
+            if (e.data === 0) {
+              setIdx((prev) => {
+                const next = (prev + 1) % TRACKS.length;
+                idxRef.current = next;
+                setProgress(0);
+                setElapsed("0:00");
+                playerRef.current?.loadVideoById(TRACKS[next].videoId);
+                return next;
+              });
+            }
+          },
+        },
+      });
+    };
+
+    if (window.YT?.Player) {
+      initPlayer();
+    } else {
+      // Chain onto any existing callback so multiple instances coexist
+      const prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => { prev?.(); initPlayer(); };
+
+      if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+        const tag = document.createElement("script");
+        tag.src   = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+      }
+    }
+
+    return () => {
+      if (tickRef.current) clearInterval(tickRef.current);
+      playerRef.current?.destroy();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Progress ticker (runs only while playing) ─────────────────────────
+  useEffect(() => {
+    if (tickRef.current) clearInterval(tickRef.current);
+    if (!playing) return;
+
+    tickRef.current = setInterval(() => {
+      const p = playerRef.current;
+      if (!p) return;
+      const cur = p.getCurrentTime();
+      const dur = p.getDuration();
+      if (dur > 0) {
+        setProgress(cur / dur);
+        setElapsed(formatTime(cur));
+      }
+    }, 500);
+
+    return () => { if (tickRef.current) clearInterval(tickRef.current); };
+  }, [playing]);
+
+  // ── Controls ─────────────────────────────────────────────────────────
+  const handlePlay = useCallback(() => {
+    const p = playerRef.current;
+    if (!p || !readyRef.current) return;
+    playingRef.current ? p.pauseVideo() : p.playVideo();
+  }, []);
+
+  const changeTrack = useCallback((newIdx: number) => {
+    idxRef.current = newIdx;
+    setIdx(newIdx);
+    setProgress(0);
+    setElapsed("0:00");
+    const p = playerRef.current;
+    if (!p || !readyRef.current) return;
+    // loadVideoById auto-plays; cueVideoById stays paused
+    if (playingRef.current) {
+      p.loadVideoById(TRACKS[newIdx].videoId);
+    } else {
+      p.cueVideoById(TRACKS[newIdx].videoId);
+    }
+  }, []);
+
+  const handleVolume = useCallback((v: number) => {
+    setVolume(v);
+    setMuted(false);
+    playerRef.current?.unMute();
+    playerRef.current?.setVolume(v * 100);
+  }, []);
+
+  const handleMute = useCallback(() => {
+    const p = playerRef.current;
+    if (!p || !readyRef.current) return;
+    if (muted) { p.unMute(); setMuted(false); }
+    else        { p.mute();  setMuted(true);  }
+  }, [muted]);
 
   // ── Abertura: posiciona próximo ao botão e emerge do seu centro ──────
   useEffect(() => {
@@ -197,20 +362,18 @@ export default function MiniPlayer({ getOriginRect, onClose, onRegisterClose }: 
     const cardW = card.offsetWidth;
     const cardH = card.offsetHeight;
 
-    // Posição alvo: abaixo do botão, alinhado pela esquerda com pequeno offset
-    let targetLeft = origin.left - 8;
-    let targetTop  = origin.bottom + 10;
+    // Calcular posição em coordenadas de viewport (para clamp e animação)
+    let vpLeft = origin.left - 8;
+    let vpTop  = origin.bottom + 10;
 
-    // Mantém dentro do viewport
-    targetLeft = Math.max(8, Math.min(window.innerWidth  - cardW - 8, targetLeft));
-    targetTop  = Math.max(8, Math.min(window.innerHeight - cardH - 8, targetTop));
+    vpLeft = Math.max(8, Math.min(window.innerWidth  - cardW - 8, vpLeft));
+    vpTop  = Math.max(8, Math.min(window.innerHeight - cardH - 8, vpTop));
 
-    // Define posição final antes de animar
-    gsap.set(card, { left: targetLeft, top: targetTop });
+    // Converter para coordenadas do documento (position: absolute)
+    gsap.set(card, { left: vpLeft + window.scrollX, top: vpTop + window.scrollY });
 
-    // Calcula delta do centro do botão até o centro do card na posição final
-    const dx = (origin.left + origin.width  / 2) - (targetLeft + cardW / 2);
-    const dy = (origin.top  + origin.height / 2) - (targetTop  + cardH / 2);
+    const dx = (origin.left + origin.width  / 2) - (vpLeft + cardW / 2);
+    const dy = (origin.top  + origin.height / 2) - (vpTop  + cardH / 2);
 
     gsap.fromTo(
       card,
@@ -234,15 +397,22 @@ export default function MiniPlayer({ getOriginRect, onClose, onRegisterClose }: 
     gsap.to(card, { x: dx, y: dy, scale: 0, opacity: 0, duration: 0.32, ease: "back.in(1.6)", onComplete: onClose });
   }, [getOriginRect, onClose]);
 
-  // Registra handleClose no pai para que o cassette possa fechar o player
   useEffect(() => { onRegisterClose?.(handleClose); }, [handleClose, onRegisterClose]);
+  useEffect(() => { onPlayingChange?.(playing); }, [playing, onPlayingChange]);
 
-  return (
-    <div
-      ref={cardRef}
-      className="fixed z-50 will-change-transform"
-      style={{ opacity: 0 }}
-    >
+  // ── Render ────────────────────────────────────────────────────────────
+  const card = (
+    <div ref={cardRef} className="absolute z-50 will-change-transform" style={{ opacity: 0 }}>
+      {/*
+        Iframe oculto do YouTube — 1×1px, fora da área visível.
+        O YT.Player precisa de um elemento real no DOM para inicializar.
+      */}
+      <div
+        ref={iframeRef}
+        aria-hidden="true"
+        style={{ position: "absolute", width: 1, height: 1, top: 0, left: 0, overflow: "hidden", pointerEvents: "none" }}
+      />
+
       <div
         className="flex w-[220px] flex-col gap-[10px] rounded-[16px] border border-white/10 p-[12px] backdrop-blur-[3px]"
         style={{ background: "linear-gradient(96deg, #191919e8 0.26%, rgba(25,25,25,0.82) 96.06%)" }}
@@ -251,46 +421,46 @@ export default function MiniPlayer({ getOriginRect, onClose, onRegisterClose }: 
         <div className="flex items-center gap-[8px]">
           <TrackLabel title={track.title} artist={track.artist} />
           <span className="shrink-0 font-sans text-[10px] tabular-nums text-muted/50">
-            {track.elapsed}
+            {elapsed}
           </span>
           <button
             onClick={handleClose}
-            className="shrink-0 text-muted/40 transition-colors hover:text-primary"
+            className="shrink-0 cursor-pointer text-muted/40 transition-colors hover:text-primary"
             aria-label="Fechar player"
           >
             <IconClose />
           </button>
         </div>
 
-        {/* ── Linha 2: barra de progresso simples ── */}
+        {/* ── Linha 2: barra de progresso real ── */}
         <div className="h-[2px] w-full overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full rounded-full bg-accent"
-            style={{ width: `${track.progress * 100}%` }}
+            className="h-full rounded-full bg-accent transition-[width] duration-500"
+            style={{ width: `${progress * 100}%` }}
           />
         </div>
 
         {/* ── Linha 3: controles + volume ── */}
         <div className="flex items-center justify-between px-[2px]">
           <button
-            onClick={() => setIdx((i) => (i - 1 + TRACKS.length) % TRACKS.length)}
-            className="flex h-[32px] w-[32px] items-center justify-center text-muted transition-colors hover:text-primary"
+            onClick={() => changeTrack((idx - 1 + TRACKS.length) % TRACKS.length)}
+            className="flex cursor-pointer h-[32px] w-[32px] items-center justify-center text-muted transition-colors hover:text-primary"
             aria-label="Faixa anterior"
           >
             <IconPrev />
           </button>
 
           <button
-            onClick={() => setPlaying((p) => !p)}
-            className="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-primary text-[#0d0e0d] transition-transform hover:scale-105 active:scale-95"
+            onClick={handlePlay}
+            className="flex cursor-pointer h-[32px] w-[32px] items-center justify-center rounded-full bg-primary text-[#0d0e0d] transition-transform hover:scale-105 active:scale-95"
             aria-label={playing ? "Pausar" : "Reproduzir"}
           >
             {playing ? <IconPause /> : <IconPlay />}
           </button>
 
           <button
-            onClick={() => setIdx((i) => (i + 1) % TRACKS.length)}
-            className="flex h-[32px] w-[32px] items-center justify-center text-muted transition-colors hover:text-primary"
+            onClick={() => changeTrack((idx + 1) % TRACKS.length)}
+            className="flex cursor-pointer h-[32px] w-[32px] items-center justify-center text-muted transition-colors hover:text-primary"
             aria-label="Próxima faixa"
           >
             <IconNext />
@@ -299,14 +469,13 @@ export default function MiniPlayer({ getOriginRect, onClose, onRegisterClose }: 
           {/* Volume com slider vertical no hover */}
           <div className="group/vol relative flex items-center">
             <button
-              onClick={() => setMuted((m) => !m)}
-              className="text-muted transition-colors hover:text-primary"
+              onClick={handleMute}
+              className="cursor-pointer text-muted transition-colors hover:text-primary"
               aria-label={muted ? "Ativar som" : "Mutar"}
             >
               <IconVolume muted={muted} />
             </button>
 
-            {/* pb-[8px]: zona transparente que mantém hover ao subir para o popup */}
             <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 pb-[8px] opacity-0 transition-opacity duration-150 group-hover/vol:pointer-events-auto group-hover/vol:opacity-100">
               <div
                 className="flex items-center justify-center rounded-[12px] border border-white/10 px-[10px] py-[10px] backdrop-blur-[2px]"
@@ -314,7 +483,7 @@ export default function MiniPlayer({ getOriginRect, onClose, onRegisterClose }: 
               >
                 <VolumeSlider
                   value={muted ? 0 : volume}
-                  onChange={(v) => { setVolume(v); setMuted(false); }}
+                  onChange={handleVolume}
                 />
               </div>
             </div>
@@ -323,4 +492,6 @@ export default function MiniPlayer({ getOriginRect, onClose, onRegisterClose }: 
       </div>
     </div>
   );
+
+  return createPortal(card, document.body);
 }

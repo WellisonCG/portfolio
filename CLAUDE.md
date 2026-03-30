@@ -18,6 +18,24 @@ what it is doing during implementation.
 
 ---
 
+# Agent Behavior Rules
+
+## Think Before Acting
+
+Before executing any task — especially complex ones:
+
+1. **Rationalize** the request: make sure the intent is clearly understood
+2. **Plan** the approach: break into steps if needed
+3. **Confirm with the user** before starting to code or making changes
+
+For simple, unambiguous tasks, a brief statement of intent is enough.
+For anything complex or involving multiple files/sections, present the plan and wait for approval.
+
+**Always answer a question directly before doing anything else.**
+If the user asks a question, answer it first — then, if needed, propose next steps.
+
+---
+
 # Core Principles
 
 ## 1. Figma MCP is the Design Source of Truth

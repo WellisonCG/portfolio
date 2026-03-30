@@ -11,21 +11,19 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/lib/language-context";
 
-const NAV_ITEMS = [
-  { label: "Context",         href: "#context"        },
-  { label: "Challenge",       href: "#challenge"       },
-  { label: "Solution",        href: "#solution"        },
-  { label: "Discovery",       href: "#discovery"       },
-  { label: "Validation",      href: "#validation"      },
-  { label: "Ideation",        href: "#ideation"        },
-  { label: "Prototyping",     href: "#prototype"       },
-  { label: "Usability Tests", href: "#usability-tests" },
-  { label: "Impact",          href: "#impact"          },
-] as const;
+const HREFS = ["#context","#challenge","#solution","#discovery","#validation","#ideation","#prototype","#usability-tests","#impact"] as const;
+
+const LABELS = {
+  EN: { nav: "Navigation", items: ["Context","Challenge","Solution","Discovery","Validation","Ideation","Prototyping","Usability Tests","Impact"] },
+  PT: { nav: "Navegação",  items: ["Contexto","Desafio","Solução","Descoberta","Validação","Ideação","Prototipação","Testes de Usabilidade","Impacto"] },
+} as const;
 
 export default function InterFinancesSidebar() {
   const [active, setActive] = useState<string>("");
+  const { language } = useLanguage();
+  const c = LABELS[language];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -37,7 +35,7 @@ export default function InterFinancesSidebar() {
       { rootMargin: "-40% 0px -55% 0px" }
     );
 
-    NAV_ITEMS.forEach(({ href }) => {
+    HREFS.forEach((href) => {
       const el = document.querySelector(href);
       if (el) observer.observe(el);
     });
@@ -46,13 +44,13 @@ export default function InterFinancesSidebar() {
   }, []);
 
   return (
-    <aside className="sticky top-[240px] flex w-[180px] shrink-0 flex-col gap-[16px]">
+    <aside className="sticky top-[240px] hidden w-[180px] shrink-0 flex-col gap-[16px] lg:flex">
       <span className="font-sans text-[20px] font-normal text-muted">
-        Navigation
+        {c.nav}
       </span>
 
       <nav className="flex flex-col gap-[8px]">
-        {NAV_ITEMS.map(({ label, href }) => {
+        {HREFS.map((href, i) => {
           const id = href.slice(1);
           const isActive = active === id;
           return (
@@ -66,7 +64,7 @@ export default function InterFinancesSidebar() {
                 className="absolute left-0 top-1/2 w-[2px] -translate-y-1/2 rounded-full bg-accent transition-all duration-300"
                 style={{ height: isActive ? 16 : 0, opacity: isActive ? 1 : 0 }}
               />
-              {label}
+              {c.items[i]}
             </Link>
           );
         })}

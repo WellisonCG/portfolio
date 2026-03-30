@@ -28,8 +28,23 @@
   with varied scale, speed, delay and drift.
 */
 
+"use client";
+
 import Image from "next/image";
 import { YOUPAY_HERO_BG, YOUPAY_HERO_COVER } from "@/lib/assets";
+import HeroCoverRise from "@/components/animations/HeroCoverRise";
+import { useLanguage } from "@/lib/language-context";
+
+const COPY = {
+  EN: {
+    title:    "Youpay Digital",
+    subtitle: "Increasing revenue and strengthening the brand with redesign of the payment flow",
+  },
+  PT: {
+    title:    "Youpay Digital",
+    subtitle: "Aumentando a receita e fortalecendo a marca com o redesign do fluxo de pagamento",
+  },
+} as const;
 
 /*
   FLAME_SHAPES — 5 SVG path silhouettes in a shared 16×26 viewBox.
@@ -100,8 +115,11 @@ const PARTICLES: {
 ];
 
 export default function YouPayHero() {
+  const { language } = useLanguage();
+  const c = COPY[language];
+
   return (
-    <section className="relative flex w-full max-w-[1200px] flex-col items-center gap-[48px] overflow-visible px-[80px] pt-[80px]">
+    <section className="relative flex w-full max-w-[1200px] flex-col items-center gap-[48px] overflow-visible px-[40px] pt-[80px] lg:px-[80px]">
 
       {/*
         SolidBg — #0D0E0D base that hides the dot-grid canvas.
@@ -191,31 +209,35 @@ export default function YouPayHero() {
       */}
       <div className="relative z-10 flex w-full flex-col items-center gap-[16px]">
         <h1 className="w-full text-center font-sans text-[80px] font-bold leading-[1.4] tracking-[-0.04em] text-primary">
-          Youpay Digital
+          {c.title}
         </h1>
         <p className="max-w-[550px] text-center font-sans text-[24px] font-normal leading-[1.5] text-primary">
-          Increasing revenue and strengthening the brand with redesign of the
-          payment flow
+          {c.subtitle}
         </p>
       </div>
 
       {/*
         Cover — Framer: width 1fr · maxWidth 1040px · height 600px
                         borderRadius 24px · border 1px solid /Black Mid (#6f6f76) · z-9
+        HeroCoverRise wraps the layout shell; overflow-hidden stays on the
+        inner div so Safari's "overflow:hidden flattens 3D" quirk doesn't
+        cancel the rotationX entrance animation.
       */}
-      <div
-        className="relative z-[9] w-full max-w-[1040px] overflow-hidden rounded-[24px] border border-[#6f6f76]"
-        style={{ height: 600 }}
-      >
-        <Image
-          src={YOUPAY_HERO_COVER}
-          alt="Youpay Digital — payment flow redesign"
-          fill
-          className="object-cover"
-          sizes="(max-width: 1040px) 100vw, 1040px"
-          priority
-        />
-      </div>
+      <HeroCoverRise className="relative z-[9] w-full max-w-[1040px]">
+        <div
+          className="relative overflow-hidden rounded-[24px] border border-[#6f6f76]"
+          style={{ aspectRatio: "1040 / 600" }}
+        >
+          <Image
+            src={YOUPAY_HERO_COVER}
+            alt="Youpay Digital — payment flow redesign"
+            fill
+            className="object-cover"
+            sizes="(max-width: 1040px) 100vw, 1040px"
+            priority
+          />
+        </div>
+      </HeroCoverRise>
 
     </section>
   );

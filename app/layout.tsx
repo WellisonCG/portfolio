@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Gabarito, Comic_Neue } from "next/font/google";
 import "./globals.css";
 import DotBackground from "@/components/ui/DotBackground";
+import { LanguageProvider } from "@/lib/language-context";
 
 /*
   Gabarito is the primary font used throughout the design.
@@ -24,7 +25,7 @@ const comicNeue = Comic_Neue({
 export const metadata: Metadata = {
   title: "Wellison Gonçalves — UX/UI Designer",
   description:
-    "Portfolio of Wellison Gonçalves. Solving problems, delivering results and having fun with design.",
+    "Portfolio of Wellison Gonçalves. Full-cycle designer who explores every stage, delivers real impact and loves the process.",
 };
 
 export default function RootLayout({
@@ -36,7 +37,9 @@ export default function RootLayout({
     <html lang="en" className={`${gabarito.variable} ${comicNeue.variable}`}>
       <body className="relative isolate antialiased">
         <DotBackground />
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

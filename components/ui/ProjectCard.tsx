@@ -42,7 +42,7 @@ export default function ProjectCard({
 }: ProjectCardProps) {
   return (
     <article
-      className="flex w-full md:w-[508px] shrink-0 flex-col gap-[24px]"
+      className="flex w-full lg:w-[508px] min-w-0 flex-col gap-[24px]"
       data-gsap="project-card"
     >
       {/* ── Cover ──────────────────────────────────────────────────────────── */}
@@ -88,7 +88,7 @@ export default function ProjectCard({
           {title}
         </h3>
         <p
-          className="font-sans text-[15px] md:text-[18px] lg:text-[20px] font-normal leading-[1.5] w-full lg:w-[419px]"
+          className="font-sans text-[18px] lg:text-[20px] font-normal leading-[1.5] w-full lg:w-[419px]"
           style={{ color: "#6f6f76" }}
         >
           {description}

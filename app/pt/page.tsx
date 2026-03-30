@@ -1,21 +1,4 @@
-/*
-  Home Page
-  ─────────────────────────────────────────────────────────────────────────────
-  Assembles all sections from the Figma design.
-
-  Section order (matching Figma "Home" frame, node 1119:1228):
-  1. NavigationBar
-  2. HeroSection
-  3. ProjectsSection
-  4. MarqueeBanner
-  5. AboutSection
-  6. CTASection
-  7. Footer
-
-  The main content uses `gap-[104px]` — the exact section spacing from Figma.
-  All sections are center-aligned; each manages its own max-width internally.
-*/
-
+import type { Metadata } from "next";
 import NavigationBar from "@/components/layout/NavigationBar";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/sections/HeroSection";
@@ -26,7 +9,13 @@ import CTASection from "@/components/sections/CTASection";
 import ScrollAnimations from "@/components/animations/ScrollAnimations";
 import ContactModal from "@/components/ui/ContactModal";
 
-export default function HomePage() {
+export const metadata: Metadata = {
+  title: "Wellison Gonçalves — UX/UI Designer",
+  description:
+    "Portfólio de Wellison Gonçalves. Designer full-cycle que explora cada etapa, entrega impacto real e ama o processo.",
+};
+
+export default function HomePagePT() {
   return (
     <div className="flex min-h-screen flex-col items-center">
       <NavigationBar />
