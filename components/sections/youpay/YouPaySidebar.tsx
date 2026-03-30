@@ -20,22 +20,19 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/lib/language-context";
 
-const NAV_ITEMS = [
-  { label: "Context",       href: "#context"     },
-  { label: "Challenge",     href: "#challenge"    },
-  { label: "Solution",      href: "#solution"     },
-  { label: "Discovery",     href: "#discovery"    },
-  { label: "Ideation",      href: "#ideation"     },
-  { label: "Prototype",     href: "#prototype"    },
-  { label: "Release",       href: "#release"      },
-  { label: "Improvement",   href: "#improvement"  },
-  { label: "Impact",        href: "#impact"       },
-  { label: "My reflection", href: "#reflection"   },
-] as const;
+const HREFS = ["#context","#challenge","#solution","#discovery","#ideation","#prototype","#release","#improvement","#impact","#reflection"] as const;
+
+const LABELS = {
+  EN: { nav: "Navigation", items: ["Context","Challenge","Solution","Discovery","Ideation","Prototype","Release","Improvement","Impact","My reflection"] },
+  PT: { nav: "Navegação",  items: ["Contexto","Desafio","Solução","Descoberta","Ideação","Prototipação","Lançamento","Aprimoramento","Impacto","Aprendizados"] },
+} as const;
 
 export default function YouPaySidebar() {
   const [active, setActive] = useState<string>("");
+  const { language } = useLanguage();
+  const c = LABELS[language];
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -47,7 +44,7 @@ export default function YouPaySidebar() {
       { rootMargin: "-40% 0px -55% 0px" }
     );
 
-    NAV_ITEMS.forEach(({ href }) => {
+    HREFS.forEach((href) => {
       const el = document.querySelector(href);
       if (el) observer.observe(el);
     });
@@ -56,14 +53,13 @@ export default function YouPaySidebar() {
   }, []);
 
   return (
-    <aside className="sticky top-[240px] flex w-[180px] shrink-0 flex-col gap-[16px]">
-      {/* "Navigation" label — Gabarito regular, muted */}
+    <aside className="sticky top-[240px] hidden w-[180px] shrink-0 flex-col gap-[16px] lg:flex">
       <span className="font-sans text-[20px] font-normal text-muted">
-        Navigation
+        {c.nav}
       </span>
 
       <nav className="flex flex-col gap-[8px]">
-        {NAV_ITEMS.map(({ label, href }) => {
+        {HREFS.map((href, i) => {
           const id = href.slice(1);
           const isActive = active === id;
           return (
@@ -73,12 +69,11 @@ export default function YouPaySidebar() {
               className="relative flex items-center pl-[16px] font-sans text-[16px] leading-[1.6] transition-colors duration-200"
               style={{ color: isActive ? "#f9fafd" : "#b6b6c2" }}
             >
-              {/* Bullet — 2px × 16px accent bar, visible only when active */}
               <span
                 className="absolute left-0 top-1/2 w-[2px] -translate-y-1/2 rounded-full bg-accent transition-all duration-300"
                 style={{ height: isActive ? 16 : 0, opacity: isActive ? 1 : 0 }}
               />
-              {label}
+              {c.items[i]}
             </Link>
           );
         })}

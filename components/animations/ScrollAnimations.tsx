@@ -25,6 +25,9 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function ScrollAnimations() {
   useEffect(() => {
+    // Skip all entrance animations in screenshot mode
+    if (new URLSearchParams(window.location.search).get("screenshot") === "1") return;
+
     const ctx = gsap.context(() => {
 
       // ── Hero — load animation (sem ScrollTrigger) ─────────────────
@@ -49,7 +52,7 @@ export default function ScrollAnimations() {
             trigger,
             start: "top bottom", // dispara quando o topo da seção entra/sai pelo fundo do viewport
             end: "bottom top",   // dispara quando o fundo da seção entra/sai pelo topo do viewport
-            toggleActions: "play reset play reset",
+            toggleActions: "play none none none",
           },
         });
 

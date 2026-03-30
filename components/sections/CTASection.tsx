@@ -16,15 +16,48 @@
 
 "use client";
 
-import { useRef } from "react";
+import { useRef, useLayoutEffect, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import EyeTrackingAvatar from "@/components/ui/EyeTrackingAvatar";
 import { CTA_MAIL_ICON, CTA_TAPE } from "@/lib/assets";
+import { useLanguage } from "@/lib/language-context";
+
+const CTA_COPY = {
+  EN: {
+    label:   "Say hello!",
+    heading: "Interesting people and good ideas are always welcome.",
+    button:  "Get in touch",
+  },
+  PT: {
+    label:   "Me mande um oi!",
+    heading: "Pessoas interessantes e boas ideias são sempre bem-vindas.",
+    button:  "Entre em contato",
+  },
+} as const;
 
 export default function CTASection() {
-  const wobbleRef = useRef<HTMLDivElement>(null);
+  const wobbleRef   = useRef<HTMLDivElement>(null);
   const wobbleTlRef = useRef<gsap.core.Timeline | null>(null);
+  const { language } = useLanguage();
+  const copy = CTA_COPY[language];
+
+  // Mount only the avatar instance that matches the current breakpoint.
+  // CSS hidden/block keeps all 3 wrappers in the DOM for layout, but
+  // EyeTrackingAvatar (and its RAF + global mousemove listener) only mounts once.
+  const [avatarVariant, setAvatarVariant] = useState<"md" | "lg" | "xl" | "2xl" | null>(null);
+
+  useLayoutEffect(() => {
+    const update = () => {
+      if (window.innerWidth < 1024)      setAvatarVariant("md");
+      else if (window.innerWidth < 1280) setAvatarVariant("lg");
+      else if (window.innerWidth < 1500) setAvatarVariant("xl");
+      else                               setAvatarVariant("2xl");
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   const handleMouseEnter = () => {
     wobbleTlRef.current?.kill();
@@ -43,25 +76,32 @@ export default function CTASection() {
   };
 
   return (
-    <section
-      id="contact"
-      className="w-full max-w-[1200px] px-4 lg:px-0 lg:pl-[92px]"
-    >
+    <section id="contact" className="w-full px-10 xl:px-0">
+      <div className="w-full max-w-[1200px] mx-auto">
       <div
         id="cta-section"
-        className="relative flex flex-col items-center gap-[24px] overflow-visible rounded-[24px] border border-[#37373b] bg-[#191919] p-[20px] md:p-[32px] lg:p-[40px]"
+        className="relative flex flex-col items-center justify-center gap-[24px] overflow-visible rounded-[24px] border border-[#37373b] bg-[#191919] p-[24px] pb-[120px] sm:p-[32px] lg:p-[40px] mb-[60px] sm:mb-0"
       >
 
-        {/* ── Avatar — desktop: extravasa à esquerda; mobile: oculto (sem espaço) */}
+        {/* ── Avatar md — bottom-left do card; pés extravasam 30px abaixo ── */}
+        <div
+          className="block lg:hidden absolute bottom-[-90px] left-1/2 -translate-x-1/2 sm:left-[-30px] sm:translate-x-0"
+        >
+          <div className="-rotate-[9.31deg] sm:-rotate-[19.31deg] scale-[0.8] shadow-[2px_2px_6px_0px_rgba(0,0,0,0.08)]">
+            {avatarVariant === "md" && <EyeTrackingAvatar />}
+          </div>
+        </div>
+
+        {/* ── Avatar lg+ — extravasa à esquerda ─────────────────────────── */}
         <div
           className="hidden lg:block absolute -translate-y-1/2 cursor-pointer"
-          style={{ left: "-92px", top: "calc(50% + 0.9px)" }}
+          style={{ left: avatarVariant === "2xl" ? "-92px" : avatarVariant === "xl" ? "-25px" : "-10px", top: "calc(50% + 0.9px)" }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
           <div ref={wobbleRef}>
             <div className="-rotate-[9.31deg] shadow-[2px_2px_6px_0px_rgba(0,0,0,0.08)]">
-              <EyeTrackingAvatar />
+              {(avatarVariant === "lg" || avatarVariant === "xl" || avatarVariant === "2xl") && <EyeTrackingAvatar />}
             </div>
           </div>
         </div>
@@ -77,19 +117,19 @@ export default function CTASection() {
 
         {/* ── Content ───────────────────────────────────────────────────────── */}
         <div className="flex flex-col items-center gap-[8px] leading-[1.1] text-primary">
-          <p className="font-comic text-[16px] md:text-[20px] lg:text-[24px] whitespace-nowrap">
-            Let&apos;s work together!
+          <p className="font-comic text-[20px] lg:text-[24px] whitespace-nowrap">
+            {copy.label}
           </p>
 
-          <h2 className="font-sans text-[22px] md:text-[34px] lg:text-[48px] font-bold text-center w-full lg:w-[685px]">
-            Are you ready to create an incredible project?
+          <h2 className="font-sans text-[34px] lg:text-[48px] font-bold text-center w-full lg:w-[685px]">
+            {copy.heading}
           </h2>
         </div>
 
         {/* ── CTA Button ────────────────────────────────────────────────────── */}
-        <a
-          href="mailto:wellison@example.com"
-          className="flex items-center gap-[8px] rounded-[4px] bg-primary px-[24px] md:px-[32px] py-[8px] transition-colors hover:bg-accent group"
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("open-contact-modal"))}
+          className="flex items-center gap-[8px] rounded-[4px] bg-primary px-[32px] py-[8px] transition-colors hover:bg-accent group cursor-pointer"
         >
           <Image
             src={CTA_MAIL_ICON}
@@ -99,11 +139,13 @@ export default function CTASection() {
             className="invert group-hover:invert-0 transition-[filter]"
             unoptimized
           />
-          <span className="font-sans text-[16px] md:text-[18px] lg:text-[20px] font-normal leading-[1.1] text-surface group-hover:text-primary whitespace-nowrap transition-colors">
-            Get in touch
+          <span className="font-sans text-[18px] lg:text-[20px] font-normal leading-[1.1] text-surface group-hover:text-primary whitespace-nowrap transition-colors">
+            {copy.button}
           </span>
-        </a>
+        </button>
 
+
+      </div>
       </div>
     </section>
   );

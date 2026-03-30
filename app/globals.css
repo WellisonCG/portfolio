@@ -29,6 +29,7 @@ body {
   font-family: var(--font-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
 }
 
 
@@ -67,6 +68,12 @@ body {
 .animate-draw-oval {
   stroke-dasharray: 1;
   animation: draw-oval 7.5s infinite;
+  animation-play-state: paused;
+}
+
+/* IntersectionObserver em MarqueeBanner adiciona esta classe quando visível */
+.draw-oval-active .animate-draw-oval {
+  animation-play-state: running;
 }
 
 /* Tooltip pulse — glow vermelho suave em loop */
@@ -106,6 +113,14 @@ body {
 .animate-marquee {
   animation: marquee 20s linear infinite;
   will-change: transform;
+}
+
+/* Cassette reel spin — used by CassettePlayer via inline style.
+   CSS animations run on the compositor thread; SMIL runs on the main thread
+   and prevented Firefox's GC from running during idle time. */
+@keyframes reel-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 /* Equalizer bars — barras do mini player pulsam quando playing=true */

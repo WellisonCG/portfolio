@@ -5,55 +5,61 @@
 
   Layout:
   - Texto bold 48px centrado, leading-[1.1], duas linhas
-  - SVG brush-circle inlinado: stroke-dashoffset anima o path do início ao fim,
-    simulando o gesto de desenhar o oval ao redor do texto
+  - BrushOval: SVG brush-circle com stroke-dashoffset animando o traço
+
+  IntersectionObserver adiciona .draw-oval-active na section quando visível,
+  o que ativa animation-play-state: running no path via CSS. Fora da viewport,
+  a animação fica paused — zero trabalho de GPU/CPU no scroll.
 
   GSAP target: #marquee-banner
 */
 
+"use client";
+
+import { useEffect, useRef } from "react";
+import BrushOval from "@/components/ui/BrushOval";
+import { useLanguage } from "@/lib/language-context";
+
+const MARQUEE_COPY = {
+  EN: { line1: "Every great idea, starts", line2: "as a horrible sketch" },
+  PT: { line1: "Toda grande ideia começa", line2: "como um esboço horrível" },
+} as const;
+
 export default function MarqueeBanner() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { language } = useLanguage();
+  const copy = MARQUEE_COPY[language];
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        el.classList.toggle("draw-oval-active", entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section
-      id="marquee-banner"
-      className="flex w-full items-center justify-center px-8 pt-12"
-    >
-      <div className="relative flex items-center justify-center">
+    <section ref={sectionRef} id="marquee-banner" className="w-full px-10 xl:px-0 md:pt-12">
+      <div className="w-full max-w-[1200px] mx-auto flex items-center justify-center">
+        <div className="relative flex items-center justify-center">
 
-        {/*
-          Brush-circle inline — fill removido para que o stroke-dashoffset
-          seja o único elemento visual e a animação de "desenho" seja precisa.
-          pathLength="1" normaliza o comprimento do path para facilitar o CSS.
-          stroke-width="10" aproxima a espessura do traço brush original.
-        */}
-        <svg
-          width="100%"
-          height="136"
-          viewBox="0 0 533 136"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-0"
-        >
-          <path
-            pathLength={1}
-            className="animate-draw-oval"
-            fill="#EA1646"
-            fillRule="evenodd"
-            clipRule="evenodd"
-            stroke="#EA1646"
-            strokeWidth="0.6"
-            strokeLinecap="round"
-            d="M479.304 118.151C465.889 120.956 452.31 123 438.697 124.691L436.144 125.001C409.759 128.15 383.231 129.97 356.679 131.179C329.272 132.428 301.828 132.87 274.39 132.775C246.951 132.68 219.521 132.074 192.126 130.79C164.73 129.505 137.328 127.584 110.053 124.643C96.4283 123.151 82.8165 121.405 69.2832 119.177L69.2802 119.176C55.7369 117.089 42.3316 114.146 29.14 110.366L29.138 110.366C22.9843 108.642 17.0262 106.253 11.3635 103.239L10.2352 102.628C8.78497 101.784 7.4102 100.81 6.12689 99.7165L6.12294 99.7126C4.85596 98.6692 3.78735 97.3925 2.97249 95.9467C2.21623 94.5314 1.86651 92.9229 1.96439 91.3091C2.11747 89.6702 2.6522 88.0938 3.52336 86.7142L3.88346 86.187C5.71132 83.5722 7.96687 81.3028 10.5511 79.4823L10.5549 79.4803C13.337 77.4685 16.2434 75.6457 19.2557 74.0237L19.2557 74.0228C25.3382 70.8189 31.6015 67.9927 38.0111 65.558L38.013 65.5579L38.013 65.557C50.8381 60.6109 64.0063 56.5649 77.2117 52.8557C88.7649 49.6107 100.449 46.688 112.153 43.9291L117.17 42.7562C143.942 36.5776 170.903 31.2449 197.926 26.2935C224.949 21.3421 252.047 16.8003 279.161 12.5835C306.276 8.36679 333.503 4.43173 360.735 0.892811L360.659 0.298039L360.659 0.299015L360.658 0.298052C360.649 0.299238 360.64 0.301127 360.631 0.302314C333.393 3.73262 306.205 7.51487 279.066 11.6511C253.615 15.5302 228.188 19.7031 202.784 24.1704L197.703 25.0677L197.702 25.0687C170.66 29.9505 143.675 35.27 116.865 41.4231C103.463 44.4294 90.0923 47.7899 76.8362 51.4738C63.5809 55.1575 50.3789 59.2094 37.4743 64.1654L36.2589 64.6256C30.1874 66.9468 24.2484 69.6208 18.471 72.6364L18.4681 72.6384C15.3849 74.2835 12.415 76.1444 9.57914 78.2078L9.03579 78.5987C6.52081 80.4544 4.31887 82.7221 2.51772 85.3111L2.13748 85.8708L2.13558 85.8747C1.1203 87.4668 0.497585 89.289 0.321209 91.183L0.320334 91.1918C0.19832 93.1152 0.608081 95.0351 1.50297 96.7286L1.50596 96.7344C2.41722 98.3721 3.61294 99.8244 5.03356 101.019C6.38521 102.182 7.83809 103.216 9.37347 104.106L9.37838 104.109C15.4786 107.488 21.9324 110.142 28.6152 112.022C41.8666 115.842 55.3336 118.824 68.9405 120.947L68.9414 120.946C82.5824 123.132 96.1628 124.896 109.931 126.401C137.249 129.387 164.651 131.35 192.084 132.677C219.518 134.004 246.984 134.681 274.444 134.79C301.905 134.899 329.372 134.328 356.817 133.079C384.262 131.83 411.674 129.845 438.962 126.459L438.963 126.459C452.613 124.738 466.222 122.678 479.7 119.839L479.704 119.838C486.433 118.336 493.147 116.831 499.761 114.76L501.006 114.394C507.218 112.526 513.252 110.076 519.031 107.072L519.031 107.071C521.97 105.531 524.69 103.586 527.114 101.287L527.595 100.823C528.906 99.5376 529.984 98.024 530.781 96.3523L530.781 96.3514C531.611 94.6453 532.002 92.7493 531.916 90.8449C531.809 87.1509 530.809 83.5424 529.008 80.3458L529.007 80.3448C527.22 77.2089 525.002 74.3551 522.422 71.8713L522.417 71.8665C517.576 67.4142 512.205 63.6143 506.434 60.5572L505.275 59.955C499.146 56.7067 492.826 53.8544 486.352 51.4137L486.351 51.4128C473.412 46.5967 460.189 42.6288 446.761 39.5331C433.38 36.3511 419.856 33.7948 406.27 31.6498L403.723 31.2581C377.406 27.2629 350.907 24.6453 324.329 23.4149L321.755 23.2922C295.163 22.0727 268.526 22.2692 241.951 23.8798L241.95 23.8798C228.206 24.7669 214.562 26.0912 200.965 28.0812L200.966 28.0812C187.344 29.99 173.86 32.8348 160.606 36.597L160.688 36.886L160.768 37.175L160.769 37.174C160.797 37.166 160.826 37.1594 160.854 37.1514C174.063 33.4655 187.497 30.6907 201.064 28.8456L201.065 28.8446C214.657 26.9279 228.327 25.6613 242.018 24.8322L242.018 24.8312C269.412 23.2763 296.867 23.2354 324.264 24.7079L324.266 24.7078C351.668 26.0276 378.984 28.8108 406.104 33.0486L406.103 33.0495C419.65 35.2072 433.131 37.79 446.481 41.0105L446.484 41.0114C459.842 44.1046 472.995 48.0691 485.862 52.8831L485.861 52.8841C492.269 55.3051 498.526 58.1304 504.596 61.3429L504.597 61.3419C507.628 62.9518 510.54 64.7629 513.402 66.6749L513.403 66.6739C516.224 68.6006 518.884 70.7664 521.356 73.147C523.808 75.5051 525.924 78.2094 527.64 81.1791C529.3 84.1422 530.214 87.4866 530.3 90.908C530.308 92.5651 529.97 94.2046 529.311 95.7162C528.692 97.1349 527.803 98.4105 526.699 99.4663L526.475 99.6744L526.467 99.6813L526.005 100.122C523.678 102.304 521.074 104.15 518.263 105.611C512.179 108.761 505.808 111.283 499.243 113.141L499.237 113.143C492.686 115.135 486.005 116.734 479.304 118.151Z"
-          />
-        </svg>
+          <BrushOval />
 
-        {/* Quote text */}
-        <h2 className="relative px-6 md:px-[40px] lg:px-[64px] py-[24px] font-sans text-[24px] md:text-[36px] lg:text-[48px] font-bold leading-[1.1] text-primary text-center">
-          Every great idea, starts
-          <br />
-          as a horrible sketch
-        </h2>
+          {/* Quote text */}
+          <h2 className="relative px-6 md:px-[40px] lg:px-[64px] py-[24px] font-sans text-[36px] lg:text-[48px] font-bold leading-[1.1] text-primary text-center">
+            {copy.line1}
+            <br />
+            {copy.line2}
+          </h2>
 
+        </div>
       </div>
     </section>
   );

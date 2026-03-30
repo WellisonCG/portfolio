@@ -9,8 +9,23 @@
   - INTER_HERO_COVER: /assets/inter/inter-hero.jpg      (cover mockup)
 */
 
+"use client";
+
 import Image from "next/image";
 import { INTER_HERO_BG, INTER_HERO_COVER } from "@/lib/assets";
+import HeroCoverRise from "@/components/animations/HeroCoverRise";
+import { useLanguage } from "@/lib/language-context";
+
+const COPY = {
+  EN: {
+    title:    "Inter My Finances",
+    subtitle: "Designing a personal finance feature to help Inter users manage their money effortlessly",
+  },
+  PT: {
+    title:    "Inter My Finances",
+    subtitle: "Disponibilizando gerenciamento financeiro pessoal para usuários do Banco Inter",
+  },
+} as const;
 
 const FLAME_SHAPES = [
   { // 0 — classic slim
@@ -69,8 +84,11 @@ const PARTICLES: {
 ];
 
 export default function InterFinancesHero() {
+  const { language } = useLanguage();
+  const c = COPY[language];
+
   return (
-    <section className="relative flex w-full max-w-[1200px] flex-col items-center gap-[48px] overflow-visible px-[80px] pt-[80px]">
+    <section className="relative flex w-full max-w-[1200px] flex-col items-center gap-[48px] overflow-visible px-[40px] pt-[80px] lg:px-[80px]">
 
       {/* SolidBg — hides the dot-grid canvas behind nav + hero */}
       <div
@@ -137,28 +155,29 @@ export default function InterFinancesHero() {
       {/* Text group */}
       <div className="relative z-10 flex w-full flex-col items-center gap-[16px]">
         <h1 className="w-full text-center font-sans text-[80px] font-bold leading-[1.4] tracking-[-0.04em] text-primary">
-          Inter My Finances
+          {c.title}
         </h1>
         <p className="max-w-[550px] text-center font-sans text-[24px] font-normal leading-[1.5] text-primary">
-          Designing a personal finance feature to help Inter users manage
-          their money effortlessly
+          {c.subtitle}
         </p>
       </div>
 
-      {/* Cover */}
-      <div
-        className="relative z-[9] w-full max-w-[1040px] overflow-hidden rounded-[24px] border border-[#6f6f76]"
-        style={{ height: 600 }}
-      >
-        <Image
-          src={INTER_HERO_COVER}
-          alt="Inter My Finances — case study cover"
-          fill
-          className="object-cover"
-          sizes="(max-width: 1040px) 100vw, 1040px"
-          priority
-        />
-      </div>
+      {/* Cover — HeroCoverRise handles the rotationX entrance animation */}
+      <HeroCoverRise className="relative z-[9] w-full max-w-[1040px]">
+        <div
+          className="relative overflow-hidden rounded-[24px] border border-[#6f6f76]"
+          style={{ aspectRatio: "1040 / 600" }}
+        >
+          <Image
+            src={INTER_HERO_COVER}
+            alt="Inter My Finances — case study cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 1040px) 100vw, 1040px"
+            priority
+          />
+        </div>
+      </HeroCoverRise>
 
     </section>
   );

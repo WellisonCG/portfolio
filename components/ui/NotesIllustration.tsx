@@ -5,7 +5,29 @@
   Textos como <text> para facilitar tradução futura.
 */
 
+"use client";
+
+import { useLanguage } from "@/lib/language-context";
+
+const NOTES_COPY = {
+  EN: {
+    title: "Don't forget it",
+    item1: "Draw your own avatar",
+    item2: "Create a new e-mail",
+    item3: "Take the trash out",
+  },
+  PT: {
+    title: "Não esquecer",
+    item1: "Desenhar meu avatar",
+    item2: "Criar um novo e-mail",
+    item3: "Tirar o lixo",
+  },
+} as const;
+
 export default function NotesIllustration() {
+  const { language } = useLanguage();
+  const c = NOTES_COPY[language];
+
   return (
     <svg width="222" height="226" viewBox="0 0 222 226" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g id="Notes">
@@ -31,7 +53,7 @@ export default function NotesIllustration() {
             fill="#F9FAFD"
             transform="rotate(10.5635 42.57 58.58)"
           >
-            Don&apos;t forget it
+            {c.title}
           </text>
 
           {/* ── Itens da lista ──────────────────────────────────────────── */}
@@ -40,21 +62,21 @@ export default function NotesIllustration() {
             {/* Item 1 — concluído */}
             <g transform="rotate(10.5635 44 90.23)">
               <text x="44" y="90.23">1.</text>
-              <text id="Draw-your-own-avatar" x="60" y="90.23">Draw your own avatar</text>
+              <text x="60" y="90.23">{c.item1}</text>
               <line x1="44" y1="85" x2="200" y2="85" stroke="#EA1646" strokeWidth="1" strokeLinecap="round"/>
             </g>
 
             {/* Item 2 — concluído */}
             <g transform="rotate(10.5635 40 124.83)">
               <text x="40" y="124.83">2.</text>
-              <text id="Create-a-new-e-mail" x="56" y="124.83">Create a new e-mail</text>
+              <text x="56" y="124.83">{c.item2}</text>
               <line x1="40" y1="119.5" x2="190" y2="119.5" stroke="#EA1646" strokeWidth="1" strokeLinecap="round"/>
             </g>
 
             {/* Item 3 — pendente */}
             <g transform="rotate(10.5635 30 164.48)">
               <text x="30" y="164.48">3.</text>
-              <text id="Take-the-trash-out" x="46" y="164.48">Take the trash out</text>
+              <text x="46" y="164.48">{c.item3}</text>
             </g>
           </g>
         </g>
