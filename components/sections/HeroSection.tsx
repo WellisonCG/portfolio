@@ -281,48 +281,65 @@ export default function HeroSection() {
 
     idleTlRef.current?.kill();
 
-    // Compute target offsets once per trigger — single getBoundingClientRect()
-    // call each, plus gsap.getProperty() cache reads (no reflow, no loop).
-    //
-    // getBoundingClientRect() includes active GSAP transforms in its result.
-    // Stripping the current GSAP x/y from both elements recovers their natural
-    // (CSS-only) positions, which is what GSAP expects as the animation target.
-    //
-    // TIP_X / TIP_Y: the cursor arrow-tip sits slightly inset from the div's
-    // top-left corner. These pixel constants shift the target so the visual tip
-    // lands exactly on the box TL — derived from the original xl+ calibration
-    // and valid at every resolution because they describe the image, not the layout.
     const TIP_X = -18;
     const TIP_Y = -4;
-
-    const cursorGsapX = (gsap.getProperty(cursor, "x") as number) || 0;
-    const cursorGsapY = (gsap.getProperty(cursor, "y") as number) || 0;
-    const boxGsapX    = (gsap.getProperty(box,    "x") as number) || 0;
-    const boxGsapY    = (gsap.getProperty(box,    "y") as number) || 0;
-    const boxRect     = box.getBoundingClientRect();
-    const cursorRect  = cursor.getBoundingClientRect();
-
-    const tX = (boxRect.left - boxGsapX) - (cursorRect.left - cursorGsapX) + TIP_X;
-    const tY = (boxRect.top  - boxGsapY) - (cursorRect.top  - cursorGsapY) + TIP_Y;
 
     if (disturbedRef.current) {
       disturbedRef.current = false;
 
+      // Box has rotation/translation from handleClick. Temporarily reset it to its
+      // natural state so getBoundingClientRect() returns unrotated positions, then
+      // restore before starting the animation. No paint happens between the gsap.set
+      // calls (JS is synchronous; the browser only paints at frame boundaries).
+      const savedRotation = (gsap.getProperty(box, "rotation") as number) || 0;
+      const savedX        = (gsap.getProperty(box, "x")        as number) || 0;
+      const savedY        = (gsap.getProperty(box, "y")        as number) || 0;
+
+      gsap.set(box, { rotation: 0, x: 0, y: 0 });
+
+      const cursorGsapX = (gsap.getProperty(cursor, "x") as number) || 0;
+      const cursorGsapY = (gsap.getProperty(cursor, "y") as number) || 0;
+      const boxRect     = box.getBoundingClientRect();
+      const cursorRect  = cursor.getBoundingClientRect();
+
+      const tX = boxRect.left - (cursorRect.left - cursorGsapX) + TIP_X;
+      const tY = boxRect.top  - (cursorRect.top  - cursorGsapY) + TIP_Y;
+
+      gsap.set(box, { rotation: savedRotation, x: savedX, y: savedY });
+
+      // dX / dY: ajuste manual de pixel para o TL no path do clique.
+      // Afina estes valores se o cursor não pousar exactamente no canto.
+      const dX =  13;
+      const dY = -50;
+
       gsap.timeline({ onComplete: () => setPhase("idle") })
-        .to(cursor, { x: tX + 3, y: tY + 53, duration: 1.4, ease: "power2.inOut" })
+        .to(cursor, { x: tX + 3 + dX, y: tY + 53 + dY, duration: 1.4, ease: "power2.inOut" })
         .to(cursor, { duration: 0.2 })
-        .to(cursor, { x: tX,     y: tY,       duration: 0.7, ease: "power2.out" })
-        .to(box,    { rotation: 0, x: 0, y: 0, duration: 0.7, ease: "power2.out" }, "<")
-        .to(cursor, { x: tX - 2, y: tY - 2,   duration: 0.25, ease: "power2.out" })
+        .to(cursor, { x: tX + 19,     y: tY + 5,         duration: 0.7, ease: "power2.out" })
+        .to(box,    { rotation: 0, x: 0, y: 0,          duration: 0.7, ease: "power2.out" }, "<")
+        .to(cursor, { x: tX + 19 - 2, y: tY + 5 - 2,   duration: 0.25, ease: "power2.out" })
         .to(cursor, { duration: 0.4 })
-        .to(cursor, { x: 0,      y: 0,        duration: 1.5,  ease: "power2.inOut" });
+        .to(cursor, { x: 0,           y: 0,             duration: 1.5, ease: "power2.inOut" });
     } else {
+      // Box is at rest (no rotation, scale reset by previous cycle).
+      // Strip current GSAP x/y from both rects to recover natural CSS positions.
+      const cursorGsapX = (gsap.getProperty(cursor, "x") as number) || 0;
+      const cursorGsapY = (gsap.getProperty(cursor, "y") as number) || 0;
+      const boxGsapX    = (gsap.getProperty(box,    "x") as number) || 0;
+      const boxGsapY    = (gsap.getProperty(box,    "y") as number) || 0;
+      const boxRect     = box.getBoundingClientRect();
+      const cursorRect  = cursor.getBoundingClientRect();
+
+      const tX = (boxRect.left - boxGsapX) - (cursorRect.left - cursorGsapX) + TIP_X;
+      const tY = (boxRect.top  - boxGsapY) - (cursorRect.top  - cursorGsapY) + TIP_Y;
+
       gsap.timeline({ onComplete: () => setPhase("idle") })
         .to(cursor, { x: tX,     y: tY,       duration: 2,    ease: "power2.inOut" })
         .to(cursor, { duration: 0.3 })
         .to(cursor, { x: tX - 2, y: tY - 2,   duration: 0.25, ease: "power2.out" })
         .to(box,    { scale: 1.015,            duration: 0.5,  ease: "back.out(1.4)" }, "<")
         .to(cursor, { duration: 0.4 })
+        .to(box,    { scale: 1,                duration: 0.3,  ease: "power2.out" }, "<")
         .to(cursor, { x: 0,      y: 0,        duration: 1.5,  ease: "power2.inOut" });
     }
   }, []);
@@ -462,7 +479,7 @@ export default function HeroSection() {
         <div
           ref={avatarRef}
           id="hero-avatar"
-          className={`absolute left-[10px] lg:left-[40px] top-0 w-[180px] h-[145px] lg:w-[185px] lg:h-[220px] z-[5] lg:z-[2] select-none ${dragging ? "lg:cursor-grabbing" : "lg:cursor-grab"}`}
+          className={`absolute left-[10px] lg:left-[40px] top-0 w-[180px] h-[145px] lg:w-[185px] lg:h-[220px] z-[5] lg:z-[4] select-none ${dragging ? "lg:cursor-grabbing" : "lg:cursor-grab"}`}
           aria-hidden="true"
           onPointerDown={onAvatarDown}
           onPointerMove={onAvatarMove}

@@ -9,26 +9,40 @@
 
 "use client";
 
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import { useLanguage } from "@/lib/language-context";
+import imgSolution      from "@/public/assets/inter/inter-image-solution.png";
+import imgValidation1   from "@/public/assets/inter/inter-image-validation-1.png";
+import imgValidation2   from "@/public/assets/inter/inter-image-validation-2.png";
+import imgValidation3   from "@/public/assets/inter/inter-image-validation-3.png";
+import imgIdeation1     from "@/public/assets/inter/inter-image-ideation.png";
+import imgIdeation2     from "@/public/assets/inter/inter-image-ideation-2.png";
+import imgIdeation3     from "@/public/assets/inter/inter-image-ideation-3.png";
+import imgPrototype1    from "@/public/assets/inter/inter-image-prototyping.png";
+import imgPrototype2    from "@/public/assets/inter/inter-image-prototyping-2.png";
+import imgUsability     from "@/public/assets/inter/inter-image-usability.png";
+import imgImpact        from "@/public/assets/inter/inter-image-impact.png";
+import personaLuizao   from "@/public/assets/inter/persona-luizao.png";
+import personaKatia    from "@/public/assets/inter/persona-katia.png";
 
 // ─── Image references ──────────────────────────────────────────────────────
 const IMG = {
-  solution:       "/assets/inter/inter-image-solution.png",
-  validation1:    "/assets/inter/inter-image-validation-1.png",
-  validation2:    "/assets/inter/inter-image-validation-2.png",
-  validation3:    "/assets/inter/inter-image-validation-3.png",
-  ideation1:      "/assets/inter/inter-image-ideation.png",
-  ideation2:      "/assets/inter/inter-image-ideation-2.png",
-  ideation3:      "/assets/inter/inter-image-ideation-3.png",
-  prototype1:     "/assets/inter/inter-image-prototyping.png",
-  prototype2:     "/assets/inter/inter-image-prototyping-2.png",
-  usabilityTests: "/assets/inter/inter-image-usability.png",
-  impact:         "/assets/inter/inter-image-impact.png",
+  solution:       imgSolution,
+  validation1:    imgValidation1,
+  validation2:    imgValidation2,
+  validation3:    imgValidation3,
+  ideation1:      imgIdeation1,
+  ideation2:      imgIdeation2,
+  ideation3:      imgIdeation3,
+  prototype1:     imgPrototype1,
+  prototype2:     imgPrototype2,
+  usabilityTests: imgUsability,
+  impact:         imgImpact,
+
 };
 
-const PERSONA_LUIZAO = "/assets/inter/persona-luizao.png";
-const PERSONA_KATIA  = "/assets/inter/persona-katia.png";
+const PERSONA_LUIZAO = personaLuizao;
+const PERSONA_KATIA  = personaKatia;
 
 // ─── Copy ──────────────────────────────────────────────────────────────────
 const COPY = {
@@ -325,10 +339,10 @@ function TakeawaysLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ContentImage({ src, alt }: { src: string; alt: string }) {
+function ContentImage({ src, alt }: { src: StaticImageData; alt: string }) {
   return (
     <div className="relative w-full overflow-hidden rounded-[16px]" style={{ aspectRatio: "1.5625 / 1" }}>
-      <Image src={src} alt={alt} fill className="object-cover" sizes="800px" />
+      <Image src={src} alt={alt} fill className="object-cover" sizes="800px" placeholder="blur" />
     </div>
   );
 }
@@ -363,7 +377,7 @@ function UL({ items }: { items: readonly string[] }) {
 
 interface PersonaCardProps {
   name: string;
-  avatarSrc: string;
+  avatarSrc: StaticImageData;
   quote: string;
   age: string;
   occupation: string;
@@ -399,7 +413,7 @@ function PersonaCard({
       <div className="flex flex-col gap-[24px] p-[24px] sm:flex-row">
         <div className="flex shrink-0 flex-col items-center gap-[12px]">
           <div className="relative h-[122px] w-[122px] overflow-hidden rounded-[12px]">
-            <Image src={avatarSrc} alt={name} fill className="object-contain" sizes="122px" />
+            <Image src={avatarSrc} alt={name} fill className="object-contain" sizes="122px" placeholder="blur" />
           </div>
           <span className="font-sans text-[20px] font-bold text-primary">{name}</span>
         </div>
@@ -511,7 +525,7 @@ export default function InterFinancesContent() {
         <SectionHeading>{copy.solutionHeading}</SectionHeading>
         <Callout><em>{copy.solutionCallout}</em></Callout>
         <Body>{copy.solutionBody}</Body>
-        <ContentImage src={IMG.solution} alt="Inter My Finances — solution overview" />
+        <ContentImage src={IMG.solution} alt="Inter My Finances feature screens showing the expense tracking dashboard integrated with Inter's cashback and investment services" />
       </section>
 
       {/* ── Discovery ─────────────────────────────────────────────────────── */}
@@ -558,8 +572,8 @@ export default function InterFinancesContent() {
       <section id="validation" className="flex flex-col gap-[32px] scroll-mt-[120px]">
         <SectionHeading>{copy.validationHeading}</SectionHeading>
         <Body>{copy.validationBody1}</Body>
-        <ContentImage src={IMG.validation1} alt="Inter My Finances — hypothesis mapping" />
-        <ContentImage src={IMG.validation2} alt="Inter My Finances — quantitative survey" />
+        <ContentImage src={IMG.validation1} alt="Hypothesis mapping canvas structuring assumptions about user financial behavior and pain points to guide the research" />
+        <ContentImage src={IMG.validation2} alt="Quantitative survey results revealing that 48% of Brazilians don't track their expenses and 80% had finances impacted by the pandemic" />
         <div className="flex flex-col gap-[24px]">
           <Body>{copy.validationBody2}</Body>
           <OL items={copy.validationHyp} />
@@ -567,7 +581,7 @@ export default function InterFinancesContent() {
           <UL items={copy.validationResults} />
           <Body>{copy.validationBody4}</Body>
         </div>
-        <ContentImage src={IMG.validation3} alt="Inter My Finances — qualitative research" />
+        <ContentImage src={IMG.validation3} alt="Qualitative research synthesis board with user quotes and key insights about financial management habits" />
         <div className="flex flex-col gap-[24px]">
           <Body>{copy.validationBody5}</Body>
           <Body>{copy.validationBody6}</Body>
@@ -583,14 +597,14 @@ export default function InterFinancesContent() {
           <Body>{copy.ideationBody1}</Body>
           <Body>{copy.ideationBody2}</Body>
         </div>
-        <ContentImage src={IMG.ideation1} alt="Inter My Finances — ideation sketches" />
+        <ContentImage src={IMG.ideation1} alt="Early ideation sketches exploring layout concepts for the personal finance management feature within the Inter app" />
         <Body>{copy.ideationBody3}</Body>
-        <ContentImage src={IMG.ideation2} alt="Inter My Finances — early usability test" />
+        <ContentImage src={IMG.ideation2} alt="First usability test session with paper prototypes to validate the core expense tracking concepts before moving to digital screens" />
         <div className="flex flex-col gap-[24px]">
           <Body>{copy.ideationBody4}</Body>
           <Body>{copy.ideationBody5}</Body>
         </div>
-        <ContentImage src={IMG.ideation3} alt="Inter My Finances — user flow" />
+        <ContentImage src={IMG.ideation3} alt="Complete user flow diagram for the Inter My Finances feature covering onboarding, expense categorization, and goal tracking paths" />
       </section>
 
       {/* ── Prototyping ───────────────────────────────────────────────────── */}
@@ -600,16 +614,16 @@ export default function InterFinancesContent() {
           <Body>{copy.prototypeBody1}</Body>
           <Body>{copy.prototypeBody2}</Body>
         </div>
-        <ContentImage src={IMG.prototype1} alt="Inter My Finances — style guide" />
+        <ContentImage src={IMG.prototype1} alt="Inter My Finances style guide defining colors, typography, and UI components aligned with Banco Inter's design language" />
         <Body>{copy.prototypeBody3}</Body>
-        <ContentImage src={IMG.prototype2} alt="Inter My Finances — high fidelity prototype" />
+        <ContentImage src={IMG.prototype2} alt="High fidelity prototype screens for the Inter My Finances feature showing the expense overview, category breakdown, and financial goal tracking" />
       </section>
 
       {/* ── Usability Tests ───────────────────────────────────────────────── */}
       <section id="usability-tests" className="flex flex-col gap-[32px] scroll-mt-[120px]">
         <SectionHeading>{copy.usabilityHeading}</SectionHeading>
         <Body>{copy.usabilityBody1}</Body>
-        <ContentImage src={IMG.usabilityTests} alt="Inter My Finances — usability test session" />
+        <ContentImage src={IMG.usabilityTests} alt="Remote usability testing session with participants navigating the high fidelity prototype to validate the expense tracking flows" />
         <Body>{copy.usabilityBody2}</Body>
         <div className="flex flex-col gap-[16px]">
           <TakeawaysLabel>{copy.usabilityTakeawaysLabel}</TakeawaysLabel>
@@ -622,7 +636,7 @@ export default function InterFinancesContent() {
       <section id="impact" className="flex flex-col gap-[32px] scroll-mt-[120px]">
         <SectionHeading>{copy.impactHeading}</SectionHeading>
         <Body>{copy.impactBody1}</Body>
-        <ContentImage src={IMG.impact} alt="Inter My Finances — final presentation" />
+        <ContentImage src={IMG.impact} alt="Final project presentation slide deck for Inter My Finances, delivered as the capstone of the UX Unicorn design specialization" />
         <div className="flex flex-col gap-[24px]">
           <Body>{copy.impactBody2}</Body>
           <Body>{copy.impactBody3}</Body>

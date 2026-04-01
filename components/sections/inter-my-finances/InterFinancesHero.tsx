@@ -12,7 +12,8 @@
 "use client";
 
 import Image from "next/image";
-import { INTER_HERO_BG, INTER_HERO_COVER } from "@/lib/assets";
+import heroBgImg    from "@/public/assets/inter/inter-hero-bg.avif";
+import heroCoverImg from "@/public/assets/inter/inter-hero.png";
 import HeroCoverRise from "@/components/animations/HeroCoverRise";
 import { useLanguage } from "@/lib/language-context";
 
@@ -104,11 +105,12 @@ export default function InterFinancesHero() {
         aria-hidden="true"
       >
         <Image
-          src={INTER_HERO_BG}
+          src={heroBgImg}
           alt=""
           fill
           className="object-cover object-bottom"
           priority
+          placeholder="blur"
         />
       </div>
 
@@ -169,12 +171,13 @@ export default function InterFinancesHero() {
           style={{ aspectRatio: "1040 / 600" }}
         >
           <Image
-            src={INTER_HERO_COVER}
-            alt="Inter My Finances — case study cover"
+            src={heroCoverImg}
+            alt="Inter My Finances feature screens inside the Banco Inter app showing the expense tracking and financial planning dashboard"
             fill
             className="object-cover"
             sizes="(max-width: 1040px) 100vw, 1040px"
             priority
+            placeholder="blur"
           />
         </div>
       </HeroCoverRise>

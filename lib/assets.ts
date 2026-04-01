@@ -38,21 +38,11 @@ export const QUOTE_BRUSH_CIRCLE = "/assets/quote/brush-circle.svg";
 // Local PNG uploaded to /public/assets/projects/youpay/
 export const YOUPAY_SCREENS = "/assets/projects/youpay/cover-youpay.png";
 
-// ─── Case Study Page: Youpay Digital ──────────────────────────────────────────
-// Blue glow + noise texture — pre-rendered background for the hero section
-export const YOUPAY_HERO_BG    = "/assets/youpay/youpay-hero-bg.png";
-// Angled mockup cover image for the hero
-export const YOUPAY_HERO_COVER = "/assets/youpay/youpay-hero.png";
 
 // ─── Project: Inter My Finances ───────────────────────────────────────────────
 // Local PNG uploaded to /public/assets/projects/inter/
 export const INTER_PHONE = "/assets/projects/inter/cover-inter.png";
 
-// ─── Case Study Page: Inter My Finances ───────────────────────────────────────
-// Background glow image for the hero section
-export const INTER_HERO_BG    = "/assets/inter/inter-hero-bg.png";
-// Cover mockup image for the hero
-export const INTER_HERO_COVER = "/assets/inter/inter-hero.png";
 
 // ─── About Section ────────────────────────────────────────────────────────────
 // picture → exported PNG with crown overlay already composited (local)

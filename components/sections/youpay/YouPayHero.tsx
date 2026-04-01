@@ -31,7 +31,8 @@
 "use client";
 
 import Image from "next/image";
-import { YOUPAY_HERO_BG, YOUPAY_HERO_COVER } from "@/lib/assets";
+import heroBgImg    from "@/public/assets/youpay/youpay-hero-bg.avif";
+import heroCoverImg from "@/public/assets/youpay/youpay-hero.png";
 import HeroCoverRise from "@/components/animations/HeroCoverRise";
 import { useLanguage } from "@/lib/language-context";
 
@@ -143,11 +144,12 @@ export default function YouPayHero() {
         aria-hidden="true"
       >
         <Image
-          src={YOUPAY_HERO_BG}
+          src={heroBgImg}
           alt=""
           fill
           className="object-cover object-bottom"
           priority
+          placeholder="blur"
         />
       </div>
 
@@ -229,12 +231,13 @@ export default function YouPayHero() {
           style={{ aspectRatio: "1040 / 600" }}
         >
           <Image
-            src={YOUPAY_HERO_COVER}
-            alt="Youpay Digital — payment flow redesign"
+            src={heroCoverImg}
+            alt="Youpay Digital app screens showing the redesigned payment flow with Pix as the highlighted default method"
             fill
             className="object-cover"
             sizes="(max-width: 1040px) 100vw, 1040px"
             priority
+            placeholder="blur"
           />
         </div>
       </HeroCoverRise>

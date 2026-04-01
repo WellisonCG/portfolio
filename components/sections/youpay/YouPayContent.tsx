@@ -9,19 +9,27 @@
 
 "use client";
 
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import { useLanguage } from "@/lib/language-context";
+import imgContext     from "@/public/assets/youpay/youpay-image-context.png";
+import imgSolution    from "@/public/assets/youpay/youpay-image-solution.png";
+import imgDiscovery   from "@/public/assets/youpay/youpay-image-discovery.png";
+import imgIdeation    from "@/public/assets/youpay/youpay-image-ideation.png";
+import imgPrototype1  from "@/public/assets/youpay/youpay-image-prototyping.png";
+import imgPrototype2  from "@/public/assets/youpay/youpay-image-prototyping-2.png";
+import imgPrototype3  from "@/public/assets/youpay/youpay-image-prototyping-3.png";
+import imgImprovement from "@/public/assets/youpay/youpay-image-improving.png";
 
 // ─── Image references ──────────────────────────────────────────────────────
 const IMG = {
-  context:    "/assets/youpay/youpay-image-context.png",
-  solution:   "/assets/youpay/youpay-image-solution.png",
-  discovery:  "/assets/youpay/youpay-image-discovery.png",
-  ideation:   "/assets/youpay/youpay-image-ideation.png",
-  prototype1: "/assets/youpay/youpay-image-prototyping.png",
-  prototype2: "/assets/youpay/youpay-image-prototyping-2.png",
-  prototype3: "/assets/youpay/youpay-image-prototyping-3.png",
-  improvement:"/assets/youpay/youpay-image-improving.png",
+  context:     imgContext,
+  solution:    imgSolution,
+  discovery:   imgDiscovery,
+  ideation:    imgIdeation,
+  prototype1:  imgPrototype1,
+  prototype2:  imgPrototype2,
+  prototype3:  imgPrototype3,
+  improvement: imgImprovement,
 };
 
 // ─── Copy ──────────────────────────────────────────────────────────────────
@@ -282,18 +290,18 @@ function TakeawaysLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ContentImage({ src, alt }: { src: string; alt: string }) {
+function ContentImage({ src, alt }: { src: StaticImageData; alt: string }) {
   return (
     <div className="relative w-full overflow-hidden rounded-[16px]" style={{ aspectRatio: "1.5625 / 1" }}>
-      <Image src={src} alt={alt} fill className="object-cover" sizes="800px" />
+      <Image src={src} alt={alt} fill className="object-cover" sizes="800px" placeholder="blur" />
     </div>
   );
 }
 
-function PanoramicImage({ src, alt }: { src: string; alt: string }) {
+function PanoramicImage({ src, alt }: { src: StaticImageData; alt: string }) {
   return (
     <div className="relative w-full overflow-hidden rounded-[16px]" style={{ aspectRatio: "2.5 / 1" }}>
-      <Image src={src} alt={alt} fill className="object-cover" sizes="800px" />
+      <Image src={src} alt={alt} fill className="object-cover" sizes="800px" placeholder="blur" />
     </div>
   );
 }
@@ -330,7 +338,7 @@ export default function YouPayContent() {
         <SectionHeading>{copy.contextHeading}</SectionHeading>
         <Body>{copy.context[0]}</Body>
         <Body>{copy.context[1]}</Body>
-        <ContentImage src={IMG.context} alt="Youpay platform context — payment flow overview" />
+        <ContentImage src={IMG.context} alt="Screenshot of the original Youpay payment flow before the redesign, showing the outdated visual and bank slip as the default payment method" />
       </section>
 
       {/* ── Challenge ─────────────────────────────────────────────────────── */}
@@ -349,7 +357,7 @@ export default function YouPayContent() {
         {copy.solutionCallout && (
           <Callout><em>{copy.solutionCallout}</em></Callout>
         )}
-        <ContentImage src={IMG.solution} alt="Youpay redesigned payment flow — solution overview" />
+        <ContentImage src={IMG.solution} alt="Redesigned Youpay payment screens with the new visual identity, featuring Pix as the highlighted and recommended payment option" />
       </section>
 
       {/* ── Discovery ─────────────────────────────────────────────────────── */}
@@ -363,7 +371,7 @@ export default function YouPayContent() {
             {copy.discoveryTakeaways.map((t, i) => <Takeaway key={i}>{t}</Takeaway>)}
           </ul>
         </div>
-        <ContentImage src={IMG.discovery} alt="Discovery — payment data analysis Q2 2023" />
+        <ContentImage src={IMG.discovery} alt="Data analysis dashboard showing 80% of payments made via bank slip and 97% of traffic coming from mobile devices in Q2 2023" />
       </section>
 
       {/* ── Ideation ──────────────────────────────────────────────────────── */}
@@ -371,7 +379,7 @@ export default function YouPayContent() {
         <SectionHeading>{copy.ideationHeading}</SectionHeading>
         <Body>{copy.ideation[0]}</Body>
         <Body>{copy.ideation[1]}</Body>
-        <PanoramicImage src={IMG.ideation} alt="User flow mapping — all payment methods" />
+        <PanoramicImage src={IMG.ideation} alt="User flow diagram mapping all three payment paths from receiving the payment link through to success confirmation: bank slip, credit card, and Pix" />
         <Callout>{copy.ideationCallout}</Callout>
       </section>
 
@@ -379,11 +387,11 @@ export default function YouPayContent() {
       <section id="prototype" className="flex flex-col gap-[32px] scroll-mt-[120px]">
         <SectionHeading>{copy.prototypeHeading}</SectionHeading>
         <Body>{copy.prototype[0]}</Body>
-        <ContentImage src={IMG.prototype1} alt="Wireframe sketches — initial ideas" />
+        <ContentImage src={IMG.prototype1} alt="Low fidelity wireframe sketches exploring layout ideas for the new payment flow screens" />
         <Body>{copy.prototype[1]}</Body>
-        <ContentImage src={IMG.prototype2} alt="Wireframe screens — payment flow" />
+        <ContentImage src={IMG.prototype2} alt="Mid fidelity wireframe screens for the full Youpay payment flow, validated with the engineering team" />
         <Body>{copy.prototype[2]}</Body>
-        <ContentImage src={IMG.prototype3} alt="High fidelity prototype — payment flow" />
+        <ContentImage src={IMG.prototype3} alt="High fidelity prototype screens alongside the Youpay style guide, establishing the visual foundation for the company's first design system" />
       </section>
 
       {/* ── Release ───────────────────────────────────────────────────────── */}
@@ -408,7 +416,7 @@ export default function YouPayContent() {
             </div>
           ))}
         </div>
-        <ContentImage src={IMG.improvement} alt="Improvement — Pix emphasis redesign" />
+        <ContentImage src={IMG.improvement} alt="Revised payment screen with Pix set as the default option, a recommended tag, stronger visual contrast, and the updated button label 'Pay with Pix'" />
       </section>
 
       {/* ── Impact ────────────────────────────────────────────────────────── */}
